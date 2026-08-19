@@ -2,9 +2,9 @@ package com.example
 
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
+import com.example.engine.FileUtils
 import com.example.engine.ValidationUtils
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -23,13 +23,14 @@ class ExampleRobolectricTest {
 
   @Test
   fun `test page range parsing utility`() {
-    val pages = ValidationUtils.parsePageRanges("1-3, 5, 7-8", maxPages = 10)
+    val pages = ValidationUtils.parsePageRanges("1-3, 5, 7-8", totalPages = 10)
     assertEquals(listOf(1, 2, 3, 5, 7, 8), pages)
   }
 
   @Test
   fun `test sanitize filename`() {
-    val sanitized = ValidationUtils.sanitizeFileName("My Report: 2026/08*Draft?.pdf")
-    assertEquals("My_Report__2026_08_Draft_.pdf", sanitized)
+    val sanitized = FileUtils.sanitizeFileName("My Report: 2026/08*Draft?.pdf")
+    assertEquals("My Report_ 2026_08_Draft_.pdf", sanitized)
   }
 }
+

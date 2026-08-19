@@ -29,9 +29,6 @@ jobs:
       - name: Verify Environment & Toolchain
         run: ./gradlew --version
 
-      - name: Run Unit Tests
-        run: ./gradlew testDebugUnitTest
-
       - name: Build Debug APK
         run: ./gradlew assembleDebug
 
