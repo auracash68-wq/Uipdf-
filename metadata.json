@@ -1,0 +1,7 @@
+{
+  "name": "Universal PDF Utility",
+  "description": "Privacy-first offline PDF utility for merging, splitting, converting, locking, signing, and compressing documents locally.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+

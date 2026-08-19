@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Back document sheet (slightly offset for depth) -->
+    <path
+        android:fillColor="#80EEF2FF"
+        android:pathData="M38,26 H72 C73.1,26 74,26.9 74,28 V76 C74,77.1 73.1,78 72,78 H38 C36.9,78 36,77.1 36,76 V28 C36,26.9 36.9,26 38,26 Z" />
+
+    <!-- Main document body -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M32,30 H64 L76,42 V80 C76,81.1 75.1,82 74,82 H32 C30.9,82 30,81.1 30,80 V32 C30,30.9 30.9,30 32,30 Z" />
+
+    <!-- Folded corner -->
+    <path
+        android:fillColor="#CBD5E1"
+        android:pathData="M64,30 V42 H76 Z" />
+    <path
+        android:fillColor="#94A3B8"
+        android:pathData="M64,42 L76,42 L64,30 Z" />
+
+    <!-- PDF Banner / Badge (Red/Coral accent) -->
+    <path
+        android:fillColor="#EF4444"
+        android:pathData="M27,50 H81 C82.1,50 83,50.9 83,52 V64 C83,65.1 82.1,66 81,66 H27 C25.9,66 25,65.1 25,64 V52 C25,50.9 25.9,50 27,50 Z" />
+
+    <!-- PDF letters stylized in white -->
+    <!-- P -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M36,54 H41.5 C42.9,54 44,55.1 44,56.5 C44,57.9 42.9,59 41.5,59 H38 V62 H36 V54 Z M38,55.8 V57.2 H41.3 C41.8,57.2 42.2,56.9 42.2,56.5 C42.2,56.1 41.8,55.8 41.3,55.8 H38 Z" />
+    <!-- D -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M48,54 H53 C55.2,54 57,55.8 57,58 C57,60.2 55.2,62 53,62 H48 V54 Z M50,55.8 V60.2 H52.8 C54,60.2 55,59.2 55,58 C55,56.8 54,55.8 52.8,55.8 H50 Z" />
+    <!-- F -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M61,54 H69 V55.8 H63 V57.2 H68 V59 H63 V62 H61 V54 Z" />
+
+    <!-- Bottom document preview lines -->
+    <path
+        android:fillColor="#E2E8F0"
+        android:pathData="M36,70 H70 V72 H36 Z" />
+    <path
+        android:fillColor="#E2E8F0"
+        android:pathData="M36,74 H58 V76 H36 Z" />
+
+    <!-- Shield / Security check badge icon on bottom right -->
+    <path
+        android:fillColor="#10B981"
+        android:pathData="M70,68 L78,65 L86,68 V76 C86,81 78,85 78,85 C78,85 70,81 70,76 V68 Z" />
+    <!-- Checkmark in shield -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M75,75.5 L73,73.5 L74.2,72.3 L75,73.1 L81.8,66.3 L83,67.5 Z" />
+</vector>
+

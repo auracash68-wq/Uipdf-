@@ -1,0 +1,203 @@
+<resources>
+    <string name="app_name">यूनिवर्सल पीडीएफ</string>
+    <string name="app_full_name">यूनिवर्सल पीडीएफ यूटिलिटी</string>
+    <string name="app_tagline">प्राइवेट पीडीएफ टूल्स। अपने डिवाइस पर प्रोसेस करें।</string>
+    
+    <!-- Navigation -->
+    <string name="nav_home">होम</string>
+    <string name="nav_recent">हाल की फाइलें</string>
+    <string name="nav_tools">टूल्स</string>
+    <string name="nav_settings">सेटिंग्स</string>
+
+    <!-- Premium Card -->
+    <string name="premium_card_title">हमेशा के लिए विज्ञापन हटाएं</string>
+    <string name="premium_card_subtitle">₹29 एक बार का आजीवन एक्सेस</string>
+    <string name="premium_card_btn">प्रीमियम लें</string>
+    <string name="premium_active_title">प्रीमियम सक्रिय है</string>
+    <string name="premium_active_subtitle">विज्ञापन-मुक्त आजीवन अनुभव सक्षम</string>
+
+    <!-- Tool Titles -->
+    <string name="tool_merge">पीडीएफ मर्ज करें</string>
+    <string name="tool_merge_desc">कई पीडीएफ फाइलों को एक में जोड़ें</string>
+    <string name="tool_split">पीडीएफ विभाजित करें</string>
+    <string name="tool_split_desc">पीडीएफ को पृष्ठों या सीमाओं में अलग करें</string>
+    <string name="tool_image_to_pdf">फोटो से पीडीएफ</string>
+    <string name="tool_image_to_pdf_desc">फ़ोटो और छवियों को पीडीएफ में बदलें</string>
+    <string name="tool_text_to_pdf">टेक्स्ट से पीडीएफ</string>
+    <string name="tool_text_to_pdf_desc">टेक्स्ट से पीडीएफ दस्तावेज़ बनाएं</string>
+    <string name="tool_lock">पीडीएफ लॉक करें</string>
+    <string name="tool_lock_desc">पासवर्ड से पीडीएफ को सुरक्षित करें</string>
+    <string name="tool_unlock">पीडीएफ अनलॉक करें</string>
+    <string name="tool_unlock_desc">अधिकृत पासवर्ड से सुरक्षा हटाएं</string>
+    <string name="tool_compress">पीडीएफ कंप्रेस करें</string>
+    <string name="tool_compress_desc">पीडीएफ फ़ाइल का आकार कम करें</string>
+    <string name="tool_sign">पीडीएफ साइन करें</string>
+    <string name="tool_sign_desc">दस्तावेज़ में अपने हस्ताक्षर जोड़ें</string>
+    <string name="tool_extract">पेज निकालें</string>
+    <string name="tool_extract_desc">चुने हुए पेजों को नई पीडीएफ में सहेजें</string>
+    <string name="tool_rotate">पेज घुमाएं</string>
+    <string name="tool_rotate_desc">पीडीएफ पेजों को 90°, 180° या 270° घुमाएं</string>
+
+    <!-- Sections -->
+    <string name="section_quick_tools">त्वरित टूल्स</string>
+    <string name="section_advanced_tools">उन्नत टूल्स</string>
+    <string name="section_recent_files">हाल की फाइलें</string>
+    <string name="section_all_tools">सभी पीडीएफ टूल्स</string>
+    <string name="view_all">सभी देखें</string>
+
+    <!-- Actions -->
+    <string name="btn_select_pdf">पीडीएफ चुनें</string>
+    <string name="btn_select_pdfs">पीडीएफ फाइलें चुनें</string>
+    <string name="btn_select_images">तस्वीरें चुनें</string>
+    <string name="btn_add_more">और फाइलें जोड़ें</string>
+    <string name="btn_save_pdf">पीडीएफ सेव करें</string>
+    <string name="btn_share_pdf">शेयर करें</string>
+    <string name="btn_open_pdf">खोलें</string>
+    <string name="btn_cancel">रद्द करें</string>
+    <string name="btn_delete">हटाएं</string>
+    <string name="btn_rename">नाम बदलें</string>
+    <string name="btn_confirm">पुष्टि करें</string>
+    <string name="btn_clear_all">सभी साफ़ करें</string>
+    <string name="btn_retry">पुनः प्रयास करें</string>
+    <string name="btn_get_started">शुरू करें</string>
+
+    <!-- Premium Screen -->
+    <string name="premium_headline">विज्ञापन-मुक्त अनुभव</string>
+    <string name="premium_subheadline">बिना रुकावट पीडीएफ टूल्स का आजीवन उपयोग करें।</string>
+    <string name="premium_price">₹29</string>
+    <string name="premium_type">एकमुश्त खरीद</string>
+    <string name="premium_benefit_1">सभी विज्ञापन हटाएं</string>
+    <string name="premium_benefit_2">सभी पीडीएफ टूल्स का पूरा एक्सेस</string>
+    <string name="premium_benefit_3">आजीवन वैधता</string>
+    <string name="premium_benefit_4">कोई मासिक शुल्क नहीं</string>
+    <string name="btn_buy_premium">₹29 में खरीदें</string>
+    <string name="btn_restore_purchase">खरीद पुनर्स्थापित करें</string>
+    <string name="premium_pending">आपकी खरीद की पुष्टि की जा रही है।</string>
+    <string name="premium_success">प्रीमियम सक्रिय हुआ!</string>
+    <string name="premium_already_owned">खरीद सफलतापूर्वक पुनर्स्थापित हुई!</string>
+    <string name="premium_restore_not_found">इस खाते के लिए कोई पिछली खरीद नहीं मिली।</string>
+
+    <!-- Merge Screen -->
+    <string name="merge_title">पीडीएफ फाइलें मर्ज करें</string>
+    <string name="merge_instruction">दो या दो से अधिक पीडीएफ फाइलों को क्रम में जोड़ने के लिए चुनें।</string>
+    <string name="btn_merge_action">मर्ज करें</string>
+    <string name="merge_empty">कोई फ़ाइल नहीं चुनी गई।</string>
+
+    <!-- Split Screen -->
+    <string name="split_title">पीडीएफ विभाजित करें</string>
+    <string name="split_mode_all">प्रत्येक पेज अलग करें</string>
+    <string name="split_mode_range">पेज रेंज (उदा. 1-3, 5-8)</string>
+    <string name="split_mode_custom">कस्टम चयन</string>
+    <string name="split_range_label">पेज रेंज दर्ज करें</string>
+    <string name="split_range_hint">उदा. 1-3, 5, 7-9</string>
+    <string name="btn_split_action">विभाजित करें</string>
+
+    <!-- Image to PDF Screen -->
+    <string name="image_to_pdf_title">तस्वीरों से पीडीएफ</string>
+    <string name="image_settings">पेज और गुणवत्ता सेटिंग्स</string>
+    <string name="page_size_label">पेज आकार</string>
+    <string name="orientation_label">दिशा</string>
+    <string name="margin_label">मार्जिन</string>
+    <string name="image_quality_label">छवि गुणवत्ता</string>
+    <string name="btn_create_pdf">पीडीएफ बनाएं</string>
+
+    <!-- Text to PDF Screen -->
+    <string name="text_to_pdf_title">टेक्स्ट से पीडीएफ</string>
+    <string name="doc_title_label">शीर्षक (वैकल्पिक)</string>
+    <string name="doc_title_hint">उदा. बैठक का विवरण</string>
+    <string name="doc_content_label">दस्तावेज़ सामग्री</string>
+    <string name="doc_content_hint">यहाँ अपना टेक्स्ट लिखें या पेस्ट करें...</string>
+    <string name="font_size_label">फ़ॉन्ट आकार</string>
+    <string name="alignment_label">संरेखण</string>
+
+    <!-- Lock/Unlock Screens -->
+    <string name="lock_title">पीडीएफ लॉक करें</string>
+    <string name="lock_instruction">इस दस्तावेज़ को सुरक्षित करने के लिए पासवर्ड सेट करें।</string>
+    <string name="password_label">पासवर्ड</string>
+    <string name="confirm_password_label">पासवर्ड की पुष्टि करें</string>
+    <string name="btn_lock_action">लॉक करें</string>
+    <string name="unlock_title">पीडीएफ अनलॉक करें</string>
+    <string name="unlock_instruction">पीडीएफ खोलने के लिए सही पासवर्ड दर्ज करें।</string>
+    <string name="btn_unlock_action">अनलॉक करें</string>
+    <string name="error_incorrect_password">गलत पीडीएफ पासवर्ड।</string>
+    <string name="error_password_mismatch">पासवर्ड मेल नहीं खाते।</string>
+    <string name="error_empty_password">पासवर्ड खाली नहीं हो सकता।</string>
+
+    <!-- Compress Screen -->
+    <string name="compress_title">पीडीएफ कंप्रेस करें</string>
+    <string name="compress_instruction">फ़ाइल का आकार घटाने के लिए स्तर चुनें।</string>
+    <string name="preset_max_quality">अधिकतम गुणवत्ता</string>
+    <string name="preset_balanced">संतुलित (अनुशंसित)</string>
+    <string name="preset_smaller">छोटा आकार</string>
+    <string name="original_size">मूल आकार</string>
+    <string name="btn_compress_action">कंप्रेस करें</string>
+
+    <!-- Sign Screen -->
+    <string name="sign_title">पीडीएफ साइन करें</string>
+    <string name="sign_instruction">अपने हस्ताक्षर बनाएं और पेज पर रखें।</string>
+    <string name="draw_signature_label">हस्ताक्षर बनाएं</string>
+    <string name="btn_clear_canvas">साफ़ करें</string>
+    <string name="signature_page_label">लक्ष्य पेज</string>
+    <string name="btn_sign_action">हस्ताक्षर जोड़ें</string>
+
+    <!-- Extract & Rotate -->
+    <string name="extract_title">पेज निकालें</string>
+    <string name="extract_instruction">नई पीडीएफ में निकालने के लिए पेज चुनें।</string>
+    <string name="btn_extract_action">चुने हुए पेज निकालें</string>
+    <string name="rotate_title">पेज घुमाएं</string>
+    <string name="rotate_angle_label">कोण</string>
+    <string name="angle_90">90° दक्षिणावर्त</string>
+    <string name="angle_180">180° आधा चक्कर</string>
+    <string name="angle_270">270° वामावर्त</string>
+    <string name="btn_rotate_action">घुमाएं</string>
+
+    <!-- Status & Messages -->
+    <string name="status_preparing">तैयार किया जा रहा है...</string>
+    <string name="status_processing">स्थानीय रूप से प्रोसेस हो रहा है...</string>
+    <string name="status_merging">फाइलें मर्ज हो रही हैं...</string>
+    <string name="status_splitting">विभाजित किया जा रहा है...</string>
+    <string name="status_compressing">कंप्रेस हो रहा है...</string>
+    <string name="status_encrypting">एन्क्रिप्ट हो रहा है...</string>
+    <string name="status_decrypting">डिक्रिप्ट हो रहा है...</string>
+    <string name="status_signing">हस्ताक्षर जोड़ा जा रहा है...</string>
+    <string name="status_saving">सहेजा जा रहा है...</string>
+    <string name="status_success">सफलतापूर्वक पूरा हुआ!</string>
+    <string name="status_offline">आप ऑफ़लाइन हैं। पीडीएफ टूल्स पूरी तरह ऑफ़लाइन काम करते हैं।</string>
+
+    <!-- Empty States -->
+    <string name="empty_recent_title">अभी तक कोई हालिया फ़ाइल नहीं है</string>
+    <string name="empty_recent_desc">प्रोसेस की गई फाइलें यहाँ दिखाई देंगी।</string>
+    <string name="btn_create_first_pdf">अपनी पहली पीडीएफ बनाएं</string>
+
+    <!-- Error Messages -->
+    <string name="error_generic">पीडीएफ प्रोसेसिंग के दौरान त्रुटि हुई।</string>
+    <string name="error_open_pdf">यह पीडीएफ खोलने में असमर्थ।</string>
+    <string name="error_corrupt_pdf">चुनी गई फ़ाइल क्षतिग्रस्त या असमर्थित है।</string>
+    <string name="error_storage_space">पीडीएफ बनाने के लिए पर्याप्त मेमोरी नहीं है।</string>
+    <string name="error_file_unavailable">फ़ाइल उपलब्ध नहीं है।</string>
+    <string name="error_invalid_range">अमान्य पेज रेंज।</string>
+    <string name="error_no_images">कृपया कम से कम एक तस्वीर चुनें।</string>
+    <string name="error_no_text">कृपया टेक्स्ट सामग्री दर्ज करें।</string>
+
+    <!-- Settings Screen -->
+    <string name="settings_title">सेटिंग्स</string>
+    <string name="settings_appearance">दिखावट</string>
+    <string name="theme_system">सिस्टम डिफ़ॉल्ट</string>
+    <string name="theme_light">लाइट थीम</string>
+    <string name="theme_dark">डार्क थीम</string>
+    <string name="settings_language">भाषा</string>
+    <string name="settings_privacy">गोपनीयता और सुरक्षा</string>
+    <string name="privacy_summary">100% ऑन-डिवाइस प्रोसेसिंग। फाइलें कभी भी सर्वर पर अपलोड नहीं होती हैं।</string>
+    <string name="settings_monetization">मुद्रीकरण</string>
+    <string name="settings_about">यूनिवर्सल पीडीएफ के बारे में</string>
+    <string name="app_version">संस्करण 1.0.0 (उत्पादन बिल्ड)</string>
+    <string name="privacy_policy_title">गोपनीयता नीति</string>
+    <string name="terms_title">सेवा की शर्तें</string>
+
+    <!-- First Launch Onboarding -->
+    <string name="onboarding_title">आपकी फाइलें आपके डिवाइस पर सुरक्षित हैं।</string>
+    <string name="onboarding_body">यूनिवर्सल पीडीएफ पूरी तरह से आपके फोन पर काम करता है। कोई भी दस्तावेज़ या हस्ताक्षर कभी भी इंटरनेट पर नहीं भेजा जाता।</string>
+    <string name="onboarding_point_1">शून्य क्लाउड अपलोड</string>
+    <string name="onboarding_point_2">तेज़ ऑफ़लाइन कार्य</string>
+    <string name="onboarding_point_3">मुफ़्त विज्ञापनों के साथ या ₹29 में आजीवन विज्ञापन-मुक्त</string>
+</resources>
