@@ -282,7 +282,7 @@ private fun BentoToolsGrid(
                 iconTintColor = Color.White,
                 isHighlighted = true,
                 modifier = Modifier.weight(1f),
-                onClick = { onNavigateToTool("tools_tab") }
+                onClick = { onNavigateToTool("tools") }
             )
         }
     }

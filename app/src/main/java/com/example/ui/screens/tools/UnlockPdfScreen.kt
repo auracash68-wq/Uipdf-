@@ -25,9 +25,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.FolderOpen
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.LockOpen
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -74,6 +79,7 @@ fun UnlockPdfScreen(
     onBack: () -> Unit
 ) {
     val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
     val uiState by viewModel.uiState.collectAsState()
     val entitlement by viewModel.entitlement.collectAsState()
 
@@ -83,6 +89,8 @@ fun UnlockPdfScreen(
     var showPassword by remember { mutableStateOf(false) }
     var outputName by remember { mutableStateOf("Unlocked_Document") }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    var isDocumentEncrypted by remember { mutableStateOf<Boolean?>(null) }
+    var detectedPageCount by remember { mutableStateOf(0) }
 
     val filePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument()
@@ -92,6 +100,12 @@ fun UnlockPdfScreen(
             selectedFileName = FileUtils.getFileName(context, uri)
             outputName = selectedFileName.removeSuffix(".pdf") + "_unlocked"
             errorMessage = null
+            password = ""
+            coroutineScope.launch {
+                val info = viewModel.inspectPdf(uri)
+                isDocumentEncrypted = info.isEncrypted
+                detectedPageCount = info.pageCount
+            }
         }
     }
 
@@ -155,7 +169,7 @@ fun UnlockPdfScreen(
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = "Choose an encrypted PDF file to unlock",
+                                text = "Choose a password-protected PDF to unlock",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -174,9 +188,9 @@ fun UnlockPdfScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Icon(
-                                imageVector = Icons.Default.Description,
+                                imageVector = if (isDocumentEncrypted == true) Icons.Default.Lock else Icons.Default.Description,
                                 contentDescription = null,
-                                tint = Color(0xFFD97706),
+                                tint = if (isDocumentEncrypted == true) Color(0xFFDC2626) else Color(0xFFD97706),
                                 modifier = Modifier.size(28.dp)
                             )
                             Spacer(modifier = Modifier.width(12.dp))
@@ -187,9 +201,13 @@ fun UnlockPdfScreen(
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
                                 Text(
-                                    text = "Ready to decrypt",
+                                    text = when (isDocumentEncrypted) {
+                                        true -> "🔒 Password Protected Document"
+                                        false -> if (detectedPageCount > 0) "Decrypted ($detectedPageCount pages)" else "Ready to process"
+                                        null -> "Inspecting document..."
+                                    },
                                     style = MaterialTheme.typography.bodySmall,
-                                    color = Color(0xFFD97706)
+                                    color = if (isDocumentEncrypted == true) Color(0xFFDC2626) else MaterialTheme.colorScheme.primary
                                 )
                             }
                             OutlinedButton(
@@ -219,7 +237,13 @@ fun UnlockPdfScreen(
 
                     OutlinedTextField(
                         value = password,
-                        onValueChange = { password = it; errorMessage = null },
+                        onValueChange = { 
+                            password = it
+                            errorMessage = null
+                            if (uiState is OperationUiState.Error) {
+                                viewModel.resetState()
+                            }
+                        },
                         label = { Text(stringResource(R.string.password_label)) },
                         visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
@@ -266,14 +290,35 @@ fun UnlockPdfScreen(
                 }
             }
 
-            if (errorMessage != null) {
+            val currentError = errorMessage ?: (uiState as? OperationUiState.Error)?.message
+            if (currentError != null) {
                 item {
                     Spacer(modifier = Modifier.height(12.dp))
-                    Text(
-                        text = errorMessage ?: "",
-                        color = MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.bodySmall
-                    )
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(14.dp),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Info,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onErrorContainer,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = currentError,
+                                color = MaterialTheme.colorScheme.onErrorContainer,
+                                style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium)
+                            )
+                        }
+                    }
                 }
             }
 

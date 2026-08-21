@@ -24,9 +24,11 @@ import com.example.model.PdfProcessResult
 import com.tom_roush.pdfbox.multipdf.PDFMergerUtility
 import com.tom_roush.pdfbox.multipdf.Splitter
 import com.tom_roush.pdfbox.pdmodel.PDDocument
+import com.tom_roush.pdfbox.pdmodel.PDPageContentStream
 import com.tom_roush.pdfbox.pdmodel.encryption.AccessPermission
 import com.tom_roush.pdfbox.pdmodel.encryption.InvalidPasswordException
 import com.tom_roush.pdfbox.pdmodel.encryption.StandardProtectionPolicy
+import com.tom_roush.pdfbox.pdmodel.graphics.image.LosslessFactory
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
@@ -37,7 +39,47 @@ import java.io.InputStream
 import kotlin.math.max
 import kotlin.math.min
 
+data class PdfStatusInfo(
+    val isEncrypted: Boolean,
+    val pageCount: Int,
+    val errorMessage: String? = null
+)
+
 class PdfProcessor(private val context: Context) {
+
+    /**
+     * Inspect PDF to determine encryption status and page count safely.
+     */
+    suspend fun inspectPdf(uri: Uri): PdfStatusInfo = withContext(Dispatchers.IO) {
+        var tempFile: File? = null
+        var doc: PDDocument? = null
+        try {
+            tempFile = FileUtils.copyUriToTempFile(context, uri, "inspect_src")
+            try {
+                doc = PDDocument.load(tempFile)
+                val encrypted = doc.isEncrypted
+                val count = doc.numberOfPages
+                PdfStatusInfo(isEncrypted = encrypted, pageCount = count)
+            } catch (e: InvalidPasswordException) {
+                PdfStatusInfo(isEncrypted = true, pageCount = 0)
+            } catch (e: Exception) {
+                val msg = e.message ?: ""
+                if (msg.contains("password", ignoreCase = true) ||
+                    msg.contains("encrypted", ignoreCase = true) ||
+                    msg.contains("crypt", ignoreCase = true)
+                ) {
+                    PdfStatusInfo(isEncrypted = true, pageCount = 0)
+                } else {
+                    PdfStatusInfo(isEncrypted = false, pageCount = 0, errorMessage = e.message)
+                }
+            }
+        } catch (e: Exception) {
+            PdfStatusInfo(isEncrypted = false, pageCount = 0, errorMessage = e.message)
+        } finally {
+            try { doc?.close() } catch (_: Exception) {}
+            tempFile?.delete()
+        }
+    }
 
     /**
      * Merge multiple PDF URIs into a single destination PDF.
@@ -509,33 +551,60 @@ class PdfProcessor(private val context: Context) {
         var tempSource: File? = null
         var doc: PDDocument? = null
         try {
-            ValidationUtils.validatePassword(password)
+            if (password.isEmpty()) {
+                return@withContext PdfProcessResult.Error("Password cannot be empty.")
+            }
             tempSource = FileUtils.copyUriToTempFile(context, sourceUri, "unlock_src")
 
             try {
                 doc = PDDocument.load(tempSource, password)
             } catch (e: InvalidPasswordException) {
-                return@withContext PdfProcessResult.Error("Incorrect PDF password.")
+                return@withContext PdfProcessResult.Error("Incorrect PDF password. Please verify and try again.")
             } catch (e: Exception) {
                 val msg = e.message ?: ""
-                if (msg.contains("password", ignoreCase = true) || msg.contains("crypt", ignoreCase = true)) {
-                    return@withContext PdfProcessResult.Error("Incorrect PDF password.")
+                if (msg.contains("password", ignoreCase = true) ||
+                    msg.contains("crypt", ignoreCase = true) ||
+                    msg.contains("encrypted", ignoreCase = true)
+                ) {
+                    return@withContext PdfProcessResult.Error("Incorrect PDF password. Please verify and try again.")
                 }
-                throw e
+                return@withContext PdfProcessResult.Error("Decryption failed: ${e.localizedMessage ?: "Invalid password or corrupted file."}")
             }
 
             if (doc.isEncrypted) {
                 doc.isAllSecurityToBeRemoved = true
             }
 
+            val pageCount = doc.numberOfPages
+            if (pageCount == 0) {
+                return@withContext PdfProcessResult.Error("Decrypted document has no pages.")
+            }
+
             val outputFile = FileUtils.createManagedOutputFile(context, outputBaseName)
             doc.save(outputFile)
+
+            // Close source doc
+            try { doc.close() } catch (_: Exception) {}
+            doc = null
+
+            // Verify the generated output file can be loaded without a password
+            var verifyDoc: PDDocument? = null
+            try {
+                verifyDoc = PDDocument.load(outputFile)
+                if (verifyDoc.isEncrypted) {
+                    return@withContext PdfProcessResult.Error("Failed to remove encryption from the document.")
+                }
+            } catch (e: Exception) {
+                return@withContext PdfProcessResult.Error("Verification of unlocked PDF failed: ${e.message}")
+            } finally {
+                try { verifyDoc?.close() } catch (_: Exception) {}
+            }
 
             PdfProcessResult.Success(
                 file = outputFile,
                 name = outputFile.name,
                 sizeBytes = outputFile.length(),
-                pageCount = doc.numberOfPages
+                pageCount = pageCount
             )
         } catch (e: Exception) {
             PdfProcessResult.Error(e.message ?: "Failed to unlock PDF.")
@@ -615,29 +684,108 @@ class PdfProcessor(private val context: Context) {
     }
 
     /**
-     * Add hand-drawn signature to a specific page of the PDF.
+     * Add hand-drawn or imported signature to selected pages of the PDF.
+     * Preserves original vector fidelity using PDFBox Lossless image placement with fallback.
      */
     suspend fun signPdf(
         sourceUri: Uri,
         signatureBitmap: Bitmap,
         targetPageNumber: Int,
-        normX: Float, // Normalized 0..1 position
+        normX: Float, // Normalized 0..1 position (top-left of signature box)
         normY: Float,
         normWidth: Float,
         normHeight: Float,
+        allPages: Boolean = false,
+        targetPages: List<Int>? = null,
         outputBaseName: String = "Signed_Document"
     ): PdfProcessResult = withContext(Dispatchers.IO) {
         var tempSource: File? = null
+        var doc: PDDocument? = null
+        try {
+            tempSource = FileUtils.copyUriToTempFile(context, sourceUri, "sign_src")
+            doc = PDDocument.load(tempSource)
+            val totalPages = doc.numberOfPages
+
+            if (totalPages == 0) {
+                return@withContext PdfProcessResult.Error("The document has 0 pages.")
+            }
+
+            val pagesToSign = when {
+                allPages -> (1..totalPages).toList()
+                targetPages != null -> targetPages.filter { it in 1..totalPages }
+                else -> listOf(targetPageNumber.coerceIn(1, totalPages))
+            }
+
+            val pdImage = LosslessFactory.createFromImage(doc, signatureBitmap)
+
+            for (pageNum in pagesToSign) {
+                val pageIndex = pageNum - 1
+                if (pageIndex in 0 until totalPages) {
+                    val page = doc.getPage(pageIndex)
+                    val mediaBox = page.cropBox ?: page.mediaBox
+                    val pageWidthPt = mediaBox.width
+                    val pageHeightPt = mediaBox.height
+
+                    val sigWidthPt = (normWidth * pageWidthPt).coerceAtLeast(10f)
+                    val sigHeightPt = (normHeight * pageHeightPt).coerceAtLeast(10f)
+                    val sigXPt = (normX * pageWidthPt).coerceIn(0f, pageWidthPt - sigWidthPt)
+                    // Convert screen top-down Y to PDF bottom-up Y coordinate
+                    val sigYPt = (pageHeightPt - (normY * pageHeightPt) - sigHeightPt).coerceIn(0f, pageHeightPt - sigHeightPt)
+
+                    val contentStream = PDPageContentStream(doc, page, PDPageContentStream.AppendMode.APPEND, true, true)
+                    contentStream.drawImage(pdImage, sigXPt, sigYPt, sigWidthPt, sigHeightPt)
+                    contentStream.close()
+                }
+            }
+
+            val outputFile = FileUtils.createManagedOutputFile(context, outputBaseName)
+            doc.save(outputFile)
+
+            PdfProcessResult.Success(
+                file = outputFile,
+                name = outputFile.name,
+                sizeBytes = outputFile.length(),
+                pageCount = totalPages
+            )
+        } catch (e: Exception) {
+            // If PDFBox direct edit encounters issue, use high-res PdfRenderer fallback
+            signPdfFallback(tempSource, signatureBitmap, targetPageNumber, normX, normY, normWidth, normHeight, allPages, targetPages, outputBaseName)
+        } finally {
+            try { doc?.close() } catch (_: Exception) {}
+            tempSource?.delete()
+        }
+    }
+
+    private suspend fun signPdfFallback(
+        tempSource: File?,
+        signatureBitmap: Bitmap,
+        targetPageNumber: Int,
+        normX: Float,
+        normY: Float,
+        normWidth: Float,
+        normHeight: Float,
+        allPages: Boolean,
+        targetPages: List<Int>?,
+        outputBaseName: String
+    ): PdfProcessResult = withContext(Dispatchers.IO) {
+        if (tempSource == null || !tempSource.exists()) {
+            return@withContext PdfProcessResult.Error("Source document could not be read.")
+        }
         var pfd: ParcelFileDescriptor? = null
         var renderer: PdfRenderer? = null
         val pdfDocument = PdfDocument()
         val paint = Paint(Paint.ANTI_ALIAS_FLAG or Paint.FILTER_BITMAP_FLAG)
 
         try {
-            tempSource = FileUtils.copyUriToTempFile(context, sourceUri, "sign_src")
             pfd = ParcelFileDescriptor.open(tempSource, ParcelFileDescriptor.MODE_READ_ONLY)
             renderer = PdfRenderer(pfd)
             val pageCount = renderer.pageCount
+
+            val pagesToSign = when {
+                allPages -> (1..pageCount).toSet()
+                targetPages != null -> targetPages.toSet()
+                else -> setOf(targetPageNumber.coerceIn(1, pageCount))
+            }
 
             for (i in 0 until pageCount) {
                 val page = renderer.openPage(i)
@@ -655,8 +803,7 @@ class PdfProcessor(private val context: Context) {
                 canvas.drawBitmap(bitmap, null, Rect(0, 0, w, h), paint)
                 bitmap.recycle()
 
-                // Overlay signature if this is the target page
-                if (i + 1 == targetPageNumber) {
+                if ((i + 1) in pagesToSign) {
                     val sigX = normX * w
                     val sigY = normY * h
                     val sigW = normWidth * w
@@ -685,7 +832,6 @@ class PdfProcessor(private val context: Context) {
             try { pdfDocument.close() } catch (_: Exception) {}
             try { renderer?.close() } catch (_: Exception) {}
             try { pfd?.close() } catch (_: Exception) {}
-            tempSource?.delete()
         }
     }
 

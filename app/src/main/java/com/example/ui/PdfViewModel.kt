@@ -196,6 +196,12 @@ class PdfViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    suspend fun inspectPdf(uri: Uri) = pdfProcessor.inspectPdf(uri)
+
+    suspend fun renderThumbnail(uri: Uri, pageIndex: Int, maxWidth: Int = 400): Bitmap? {
+        return pdfProcessor.renderPageThumbnail(uri, pageIndex, maxWidth)
+    }
+
     fun signPdf(
         activity: Activity,
         sourceUri: Uri,
@@ -205,14 +211,23 @@ class PdfViewModel(application: Application) : AndroidViewModel(application) {
         normY: Float,
         normWidth: Float,
         normHeight: Float,
-        outputName: String
+        allPages: Boolean = false,
+        targetPages: List<Int>? = null,
+        outputName: String = "Signed_Document"
     ) {
         _uiState.value = OperationUiState.Processing("Applying signature to document...")
         viewModelScope.launch {
             val result = pdfProcessor.signPdf(
-                sourceUri, signatureBitmap, targetPageNumber,
-                normX, normY, normWidth, normHeight,
-                outputName.ifBlank { "Signed_Document" }
+                sourceUri = sourceUri,
+                signatureBitmap = signatureBitmap,
+                targetPageNumber = targetPageNumber,
+                normX = normX,
+                normY = normY,
+                normWidth = normWidth,
+                normHeight = normHeight,
+                allPages = allPages,
+                targetPages = targetPages,
+                outputBaseName = outputName.ifBlank { "Signed_Document" }
             )
             handleResult(activity, result, PdfOperationType.SIGN)
         }

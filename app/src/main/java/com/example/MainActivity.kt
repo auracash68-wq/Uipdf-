@@ -191,6 +191,34 @@ class MainActivity : ComponentActivity() {
                                 )
                             }
 
+                            // Aliases for Tools/Advanced navigation
+                            composable("tools") {
+                                ToolsScreen(
+                                    viewModel = viewModel,
+                                    onNavigateToTool = { toolRoute ->
+                                        navController.navigate(toolRoute)
+                                    }
+                                )
+                            }
+
+                            composable("tools_tab") {
+                                ToolsScreen(
+                                    viewModel = viewModel,
+                                    onNavigateToTool = { toolRoute ->
+                                        navController.navigate(toolRoute)
+                                    }
+                                )
+                            }
+
+                            composable("advanced") {
+                                ToolsScreen(
+                                    viewModel = viewModel,
+                                    onNavigateToTool = { toolRoute ->
+                                        navController.navigate(toolRoute)
+                                    }
+                                )
+                            }
+
                             composable(BottomNavItem.Recent.route) {
                                 RecentScreen(
                                     viewModel = viewModel,
