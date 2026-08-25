@@ -143,7 +143,7 @@ private fun HeaderSection(
                 color = MaterialTheme.colorScheme.onBackground
             )
             Text(
-                text = "PRIVATE • OFFLINE • SECURE",
+                text = "PRIVATE • ON-DEVICE • SECURE",
                 style = MaterialTheme.typography.labelSmall.copy(
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 10.sp,

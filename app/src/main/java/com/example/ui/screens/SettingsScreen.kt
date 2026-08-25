@@ -289,8 +289,9 @@ fun SettingsScreen(
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(
                         text = "PDF Suite is strictly designed with privacy-first architecture:\n\n" +
-                                "• 100% Local Processing: All PDF operations (merging, splitting, encryption, signatures) occur locally inside the device sandbox.\n" +
+                                "• 100% On-Device Processing: All PDF operations (merging, splitting, encryption, signatures) occur locally inside the device sandbox.\n" +
                                 "• Zero Cloud Uploads: Documents and images are never uploaded to any remote server or AI service.\n" +
+                                "• Free Mode Ad Usage: Free mode requires an Internet connection only to display advertisements. Your documents are never transmitted.\n" +
                                 "• Minimal Permissions: The app uses Android Storage Access Framework (SAF) without requesting broad filesystem storage permissions.",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,

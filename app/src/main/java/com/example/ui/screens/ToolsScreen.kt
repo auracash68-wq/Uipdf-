@@ -68,7 +68,7 @@ fun ToolsScreen(
                     color = MaterialTheme.colorScheme.onBackground
                 )
                 Text(
-                    text = "100% offline document processing engine",
+                    text = "100% on-device document processing engine",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

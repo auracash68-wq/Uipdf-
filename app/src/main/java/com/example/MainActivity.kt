@@ -241,70 +241,80 @@ class MainActivity : ComponentActivity() {
                             composable("merge") {
                                 MergePdfScreen(
                                     viewModel = viewModel,
-                                    onBack = { navController.popBackStack() }
+                                    onBack = { navController.popBackStack() },
+                                    onNavigateToPremium = { navController.navigate("premium") }
                                 )
                             }
 
                             composable("split") {
                                 SplitPdfScreen(
                                     viewModel = viewModel,
-                                    onBack = { navController.popBackStack() }
+                                    onBack = { navController.popBackStack() },
+                                    onNavigateToPremium = { navController.navigate("premium") }
                                 )
                             }
 
                             composable("image_to_pdf") {
                                 ImageToPdfScreen(
                                     viewModel = viewModel,
-                                    onBack = { navController.popBackStack() }
+                                    onBack = { navController.popBackStack() },
+                                    onNavigateToPremium = { navController.navigate("premium") }
                                 )
                             }
 
                             composable("text_to_pdf") {
                                 TextToPdfScreen(
                                     viewModel = viewModel,
-                                    onBack = { navController.popBackStack() }
+                                    onBack = { navController.popBackStack() },
+                                    onNavigateToPremium = { navController.navigate("premium") }
                                 )
                             }
 
                             composable("lock") {
                                 LockPdfScreen(
                                     viewModel = viewModel,
-                                    onBack = { navController.popBackStack() }
+                                    onBack = { navController.popBackStack() },
+                                    onNavigateToPremium = { navController.navigate("premium") }
                                 )
                             }
 
                             composable("unlock") {
                                 UnlockPdfScreen(
                                     viewModel = viewModel,
-                                    onBack = { navController.popBackStack() }
+                                    onBack = { navController.popBackStack() },
+                                    onNavigateToPremium = { navController.navigate("premium") }
                                 )
                             }
 
                             composable("compress") {
                                 CompressPdfScreen(
                                     viewModel = viewModel,
-                                    onBack = { navController.popBackStack() }
+                                    onBack = { navController.popBackStack() },
+                                    onNavigateToPremium = { navController.navigate("premium") }
                                 )
                             }
 
                             composable("sign") {
                                 SignPdfScreen(
                                     viewModel = viewModel,
-                                    onBack = { navController.popBackStack() }
+                                    onBack = { navController.popBackStack() },
+                                    onNavigateToPremium = { navController.navigate("premium") }
                                 )
                             }
 
                             composable("extract") {
                                 ExtractPagesScreen(
                                     viewModel = viewModel,
-                                    onBack = { navController.popBackStack() }
+                                    onBack = { navController.popBackStack() },
+                                    onNavigateToPremium = { navController.navigate("premium") }
                                 )
                             }
 
                             composable("rotate") {
                                 RotatePagesScreen(
                                     viewModel = viewModel,
-                                    onBack = { navController.popBackStack() }
+                                    onBack = { navController.popBackStack() },
+                                    onNavigateToPremium = { navController.navigate("premium") }
                                 )
                             }
 

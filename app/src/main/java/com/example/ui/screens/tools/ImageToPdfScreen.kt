@@ -64,6 +64,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.R
 import com.example.engine.FileUtils
+import com.example.engine.NetworkUtils
 import com.example.model.DocMargin
 import com.example.model.DocOrientation
 import com.example.model.DocPageSize
@@ -71,6 +72,7 @@ import com.example.model.ImageQualityPreset
 import com.example.model.SelectedImageItem
 import com.example.ui.OperationUiState
 import com.example.ui.PdfViewModel
+import com.example.ui.components.InternetRequiredDialog
 import com.example.ui.components.PrimaryButton
 import com.example.ui.components.ProcessingProgressDialog
 import com.example.ui.components.SuccessResultDialog
@@ -80,7 +82,8 @@ import com.example.ui.components.ToolGuideAndAdSection
 @Composable
 fun ImageToPdfScreen(
     viewModel: PdfViewModel,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onNavigateToPremium: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState()
@@ -94,6 +97,7 @@ fun ImageToPdfScreen(
     var quality by remember { mutableStateOf(ImageQualityPreset.BALANCED) }
     var outputName by remember { mutableStateOf("Photos_Document") }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    var showInternetRequiredDialog by remember { mutableStateOf(false) }
 
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetMultipleContents()
@@ -377,7 +381,9 @@ fun ImageToPdfScreen(
                     PrimaryButton(
                         text = stringResource(R.string.btn_create_pdf),
                         onClick = {
-                            if (context is Activity) {
+                            if (!viewModel.isOperationAllowed(context)) {
+                                showInternetRequiredDialog = true
+                            } else if (context is Activity) {
                                 viewModel.imagesToPdf(
                                     context,
                                     selectedImages.map { it.uri },
@@ -414,6 +420,21 @@ fun ImageToPdfScreen(
                 )
             }
         }
+    }
+
+    // Internet Required Warning for Free Mode
+    if (showInternetRequiredDialog) {
+        InternetRequiredDialog(
+            onDismiss = { showInternetRequiredDialog = false },
+            onOpenSettings = {
+                NetworkUtils.openInternetSettings(context)
+                showInternetRequiredDialog = false
+            },
+            onGetPremium = {
+                showInternetRequiredDialog = false
+                onNavigateToPremium()
+            }
+        )
     }
 
     // Dialogs

@@ -56,9 +56,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.R
 import com.example.engine.FileUtils
+import com.example.engine.NetworkUtils
 import com.example.model.SplitMode
 import com.example.ui.OperationUiState
 import com.example.ui.PdfViewModel
+import com.example.ui.components.InternetRequiredDialog
 import com.example.ui.components.PrimaryButton
 import com.example.ui.components.ProcessingProgressDialog
 import com.example.ui.components.SuccessResultDialog
@@ -68,7 +70,8 @@ import com.example.ui.components.ToolGuideAndAdSection
 @Composable
 fun SplitPdfScreen(
     viewModel: PdfViewModel,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onNavigateToPremium: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState()
@@ -81,6 +84,7 @@ fun SplitPdfScreen(
     var pageRangeInput by remember { mutableStateOf("1-2") }
     var outputName by remember { mutableStateOf("Split_Document") }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    var showInternetRequiredDialog by remember { mutableStateOf(false) }
 
     val filePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument()
@@ -283,7 +287,9 @@ fun SplitPdfScreen(
                         onClick = {
                             val uri = selectedUri
                             if (uri != null) {
-                                if (context is Activity) {
+                                if (!viewModel.isOperationAllowed(context)) {
+                                    showInternetRequiredDialog = true
+                                } else if (context is Activity) {
                                     viewModel.splitPdf(context, uri, pageRangeInput, outputName)
                                 }
                             }
@@ -313,6 +319,21 @@ fun SplitPdfScreen(
                 )
             }
         }
+    }
+
+    // Internet Required Warning for Free Mode
+    if (showInternetRequiredDialog) {
+        InternetRequiredDialog(
+            onDismiss = { showInternetRequiredDialog = false },
+            onOpenSettings = {
+                NetworkUtils.openInternetSettings(context)
+                showInternetRequiredDialog = false
+            },
+            onGetPremium = {
+                showInternetRequiredDialog = false
+                onNavigateToPremium()
+            }
+        )
     }
 
     // Dialogs

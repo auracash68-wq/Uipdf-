@@ -55,9 +55,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.R
 import com.example.engine.FileUtils
+import com.example.engine.NetworkUtils
 import com.example.engine.ValidationUtils
 import com.example.ui.OperationUiState
 import com.example.ui.PdfViewModel
+import com.example.ui.components.InternetRequiredDialog
 import com.example.ui.components.PrimaryButton
 import com.example.ui.components.ProcessingProgressDialog
 import com.example.ui.components.SuccessResultDialog
@@ -67,7 +69,8 @@ import com.example.ui.components.ToolGuideAndAdSection
 @Composable
 fun RotatePagesScreen(
     viewModel: PdfViewModel,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onNavigateToPremium: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState()
@@ -81,6 +84,7 @@ fun RotatePagesScreen(
     var customPageInput by remember { mutableStateOf("1") }
     var outputName by remember { mutableStateOf("Rotated_Document") }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    var showInternetRequiredDialog by remember { mutableStateOf(false) }
 
     val filePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument()
@@ -276,8 +280,12 @@ fun RotatePagesScreen(
                         text = stringResource(R.string.btn_rotate_action),
                         onClick = {
                             val uri = selectedUri
-                            if (uri != null && context is Activity) {
-                                viewModel.rotatePdf(context, uri, rotationAngle, null, outputName)
+                            if (uri != null) {
+                                if (!viewModel.isOperationAllowed(context)) {
+                                    showInternetRequiredDialog = true
+                                } else if (context is Activity) {
+                                    viewModel.rotatePdf(context, uri, rotationAngle, null, outputName)
+                                }
                             }
                         },
                         testTag = "rotate_action_button"
@@ -305,6 +313,21 @@ fun RotatePagesScreen(
                 )
             }
         }
+    }
+
+    // Internet Required Warning for Free Mode
+    if (showInternetRequiredDialog) {
+        InternetRequiredDialog(
+            onDismiss = { showInternetRequiredDialog = false },
+            onOpenSettings = {
+                NetworkUtils.openInternetSettings(context)
+                showInternetRequiredDialog = false
+            },
+            onGetPremium = {
+                showInternetRequiredDialog = false
+                onNavigateToPremium()
+            }
+        )
     }
 
     // Dialogs

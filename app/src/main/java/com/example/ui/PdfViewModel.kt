@@ -18,6 +18,7 @@ import com.example.data.BillingManager
 import com.example.data.RecentPdfRepository
 import com.example.data.SettingsRepository
 import com.example.engine.FileUtils
+import com.example.engine.NetworkUtils
 import com.example.engine.PdfProcessor
 import com.example.model.CompressionPreset
 import com.example.model.DocMargin
@@ -106,6 +107,16 @@ class PdfViewModel(application: Application) : AndroidViewModel(application) {
 
     fun restorePurchases() {
         billingManager.restorePurchases()
+    }
+
+    /**
+     * Check if a PDF operation is allowed to proceed:
+     * - Premium users can proceed unconditionally (even offline).
+     * - Free users require an active Internet connection to support ads.
+     */
+    fun isOperationAllowed(context: Context): Boolean {
+        if (entitlement.value == UserEntitlement.PREMIUM) return true
+        return NetworkUtils.isInternetAvailable(context)
     }
 
     // --- PDF Operations ---

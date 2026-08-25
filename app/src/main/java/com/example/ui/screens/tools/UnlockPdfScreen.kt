@@ -65,8 +65,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.R
 import com.example.engine.FileUtils
+import com.example.engine.NetworkUtils
 import com.example.ui.OperationUiState
 import com.example.ui.PdfViewModel
+import com.example.ui.components.InternetRequiredDialog
 import com.example.ui.components.PrimaryButton
 import com.example.ui.components.ProcessingProgressDialog
 import com.example.ui.components.SuccessResultDialog
@@ -76,7 +78,8 @@ import com.example.ui.components.ToolGuideAndAdSection
 @Composable
 fun UnlockPdfScreen(
     viewModel: PdfViewModel,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onNavigateToPremium: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
@@ -90,6 +93,7 @@ fun UnlockPdfScreen(
     var showPassword by remember { mutableStateOf(false) }
     var outputName by remember { mutableStateOf("Unlocked_Document") }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    var showInternetRequiredDialog by remember { mutableStateOf(false) }
     var isDocumentEncrypted by remember { mutableStateOf<Boolean?>(null) }
     var detectedPageCount by remember { mutableStateOf(0) }
 
@@ -282,8 +286,12 @@ fun UnlockPdfScreen(
                                 return@PrimaryButton
                             }
                             val uri = selectedUri
-                            if (uri != null && context is Activity) {
-                                viewModel.unlockPdf(context, uri, password, outputName)
+                            if (uri != null) {
+                                if (!viewModel.isOperationAllowed(context)) {
+                                    showInternetRequiredDialog = true
+                                } else if (context is Activity) {
+                                    viewModel.unlockPdf(context, uri, password, outputName)
+                                }
                             }
                         },
                         testTag = "unlock_action_button"
@@ -332,6 +340,21 @@ fun UnlockPdfScreen(
                 )
             }
         }
+    }
+
+    // Internet Required Warning for Free Mode
+    if (showInternetRequiredDialog) {
+        InternetRequiredDialog(
+            onDismiss = { showInternetRequiredDialog = false },
+            onOpenSettings = {
+                NetworkUtils.openInternetSettings(context)
+                showInternetRequiredDialog = false
+            },
+            onGetPremium = {
+                showInternetRequiredDialog = false
+                onNavigateToPremium()
+            }
+        )
     }
 
     // Dialogs

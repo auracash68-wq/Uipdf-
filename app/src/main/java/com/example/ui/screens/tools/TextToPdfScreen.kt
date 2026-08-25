@@ -47,8 +47,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.R
 import com.example.engine.FileUtils
+import com.example.engine.NetworkUtils
 import com.example.ui.OperationUiState
 import com.example.ui.PdfViewModel
+import com.example.ui.components.InternetRequiredDialog
 import com.example.ui.components.PrimaryButton
 import com.example.ui.components.ProcessingProgressDialog
 import com.example.ui.components.SuccessResultDialog
@@ -58,7 +60,8 @@ import com.example.ui.components.ToolGuideAndAdSection
 @Composable
 fun TextToPdfScreen(
     viewModel: PdfViewModel,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onNavigateToPremium: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState()
@@ -70,6 +73,7 @@ fun TextToPdfScreen(
     var fontSizeSp by remember { mutableStateOf(14f) }
     var outputName by remember { mutableStateOf("Notes_Document") }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    var showInternetRequiredDialog by remember { mutableStateOf(false) }
 
     val createDocLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.CreateDocument("application/pdf")
@@ -183,7 +187,9 @@ fun TextToPdfScreen(
                     text = stringResource(R.string.btn_create_pdf),
                     enabled = bodyText.isNotBlank() || titleText.isNotBlank(),
                     onClick = {
-                        if (context is Activity) {
+                        if (!viewModel.isOperationAllowed(context)) {
+                            showInternetRequiredDialog = true
+                        } else if (context is Activity) {
                             viewModel.textToPdf(context, titleText, bodyText, fontSizeSp, outputName)
                         }
                     },
@@ -211,6 +217,21 @@ fun TextToPdfScreen(
                 )
             }
         }
+    }
+
+    // Internet Required Warning for Free Mode
+    if (showInternetRequiredDialog) {
+        InternetRequiredDialog(
+            onDismiss = { showInternetRequiredDialog = false },
+            onOpenSettings = {
+                NetworkUtils.openInternetSettings(context)
+                showInternetRequiredDialog = false
+            },
+            onGetPremium = {
+                showInternetRequiredDialog = false
+                onNavigateToPremium()
+            }
+        )
     }
 
     // Dialogs

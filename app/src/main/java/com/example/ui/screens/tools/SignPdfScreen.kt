@@ -91,9 +91,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.R
 import com.example.engine.FileUtils
+import com.example.engine.NetworkUtils
 import com.example.ui.OperationUiState
 import com.example.ui.PdfViewModel
 import com.example.ui.components.DrawingPath
+import com.example.ui.components.InternetRequiredDialog
 import com.example.ui.components.PrimaryButton
 import com.example.ui.components.ProcessingProgressDialog
 import com.example.ui.components.SecondaryButton
@@ -114,7 +116,8 @@ enum class SignatureInputMode {
 @Composable
 fun SignPdfScreen(
     viewModel: PdfViewModel,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onNavigateToPremium: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
@@ -129,6 +132,7 @@ fun SignPdfScreen(
     var allPages by remember { mutableStateOf(false) }
     var outputName by remember { mutableStateOf("Signed_Document") }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    var showInternetRequiredDialog by remember { mutableStateOf(false) }
 
     // Signature mode & assets
     var inputMode by remember { mutableStateOf(SignatureInputMode.DRAW) }
@@ -719,19 +723,23 @@ fun SignPdfScreen(
                             }
 
                             val uri = selectedUri
-                            if (uri != null && context is Activity) {
-                                viewModel.signPdf(
-                                    activity = context,
-                                    sourceUri = uri,
-                                    signatureBitmap = activeBitmap,
-                                    targetPageNumber = targetPage,
-                                    normX = normX,
-                                    normY = normY,
-                                    normWidth = sigScale,
-                                    normHeight = sigScale * 0.45f,
-                                    allPages = allPages,
-                                    outputName = outputName
-                                )
+                            if (uri != null) {
+                                if (!viewModel.isOperationAllowed(context)) {
+                                    showInternetRequiredDialog = true
+                                } else if (context is Activity) {
+                                    viewModel.signPdf(
+                                        activity = context,
+                                        sourceUri = uri,
+                                        signatureBitmap = activeBitmap,
+                                        targetPageNumber = targetPage,
+                                        normX = normX,
+                                        normY = normY,
+                                        normWidth = sigScale,
+                                        normHeight = sigScale * 0.45f,
+                                        allPages = allPages,
+                                        outputName = outputName
+                                    )
+                                }
                             }
                         },
                         testTag = "sign_action_button"
@@ -780,6 +788,21 @@ fun SignPdfScreen(
                 )
             }
         }
+    }
+
+    // Internet Required Warning for Free Mode
+    if (showInternetRequiredDialog) {
+        InternetRequiredDialog(
+            onDismiss = { showInternetRequiredDialog = false },
+            onOpenSettings = {
+                NetworkUtils.openInternetSettings(context)
+                showInternetRequiredDialog = false
+            },
+            onGetPremium = {
+                showInternetRequiredDialog = false
+                onNavigateToPremium()
+            }
+        )
     }
 
     // Dialogs

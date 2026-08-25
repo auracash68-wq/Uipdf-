@@ -16,6 +16,7 @@
     <string name="premium_card_title">Remove ads forever</string>
     <string name="premium_card_subtitle">₹29 one-time lifetime access</string>
     <string name="premium_card_btn">Go Premium</string>
+    <string name="premium_banner_content_desc">Go Premium — Lifetime Ad-Free Access for ₹25</string>
     <string name="premium_active_title">Premium Active</string>
     <string name="premium_active_subtitle">Ad-free lifetime experience enabled</string>
 
@@ -219,6 +220,12 @@
     <string name="video_guide_offline_hint">Connect to the internet to load the video tutorial or watch on YouTube.</string>
     <string name="btn_watch_youtube">Watch on YouTube</string>
     
+    <!-- Internet Required for Free Mode Warning -->
+    <string name="internet_warning_title">Internet Required for Free Mode</string>
+    <string name="internet_warning_body">Your documents are processed entirely on your device and are not uploaded to our servers.\n\nFree mode needs an Internet connection only to display advertisements.\n\nYou can turn on Wi-Fi or mobile data to continue using Free mode, or upgrade to Premium for an ad-free experience.</string>
+    <string name="btn_open_internet_settings">Open Internet Settings</string>
+    <string name="btn_get_premium">Get Premium</string>
+
     <!-- Recent Item Actions -->
     <string name="action_open">Open</string>
     <string name="action_share">Share</string>

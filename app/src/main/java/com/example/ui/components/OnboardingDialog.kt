@@ -117,7 +117,7 @@ fun OnboardingDialog(
 
                     OnboardingFeatureItem(
                         icon = Icons.Default.CloudOff,
-                        title = "100% Offline Processing",
+                        title = "100% On-Device Processing",
                         desc = "Your documents and signature never leave this device."
                     )
 
