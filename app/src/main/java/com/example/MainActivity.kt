@@ -187,6 +187,9 @@ class MainActivity : ComponentActivity() {
                                     viewModel = viewModel,
                                     onNavigateToTool = { toolRoute ->
                                         navController.navigate(toolRoute)
+                                    },
+                                    onNavigateToPremium = {
+                                        navController.navigate("premium_paywall")
                                     }
                                 )
                             }
@@ -197,6 +200,9 @@ class MainActivity : ComponentActivity() {
                                     viewModel = viewModel,
                                     onNavigateToTool = { toolRoute ->
                                         navController.navigate(toolRoute)
+                                    },
+                                    onNavigateToPremium = {
+                                        navController.navigate("premium_paywall")
                                     }
                                 )
                             }
@@ -206,6 +212,9 @@ class MainActivity : ComponentActivity() {
                                     viewModel = viewModel,
                                     onNavigateToTool = { toolRoute ->
                                         navController.navigate(toolRoute)
+                                    },
+                                    onNavigateToPremium = {
+                                        navController.navigate("premium_paywall")
                                     }
                                 )
                             }
@@ -215,6 +224,9 @@ class MainActivity : ComponentActivity() {
                                     viewModel = viewModel,
                                     onNavigateToTool = { toolRoute ->
                                         navController.navigate(toolRoute)
+                                    },
+                                    onNavigateToPremium = {
+                                        navController.navigate("premium_paywall")
                                     }
                                 )
                             }

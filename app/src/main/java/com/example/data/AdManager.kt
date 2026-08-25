@@ -38,8 +38,11 @@ class AdManager(
 
     init {
         try {
-            MobileAds.initialize(context) {}
-            preloadInterstitial()
+            MobileAds.initialize(context) {
+                try {
+                    preloadInterstitial()
+                } catch (_: Exception) {}
+            }
         } catch (_: Exception) {}
     }
 
@@ -50,24 +53,28 @@ class AdManager(
     fun preloadInterstitial() {
         if (isPremium() || isAdLoading || interstitialAd != null) return
 
-        isAdLoading = true
-        val adRequest = AdRequest.Builder().build()
-        InterstitialAd.load(
-            context,
-            INTERSTITIAL_TEST_ID,
-            adRequest,
-            object : InterstitialAdLoadCallback() {
-                override fun onAdLoaded(ad: InterstitialAd) {
-                    interstitialAd = ad
-                    isAdLoading = false
-                }
+        try {
+            isAdLoading = true
+            val adRequest = AdRequest.Builder().build()
+            InterstitialAd.load(
+                context,
+                INTERSTITIAL_TEST_ID,
+                adRequest,
+                object : InterstitialAdLoadCallback() {
+                    override fun onAdLoaded(ad: InterstitialAd) {
+                        interstitialAd = ad
+                        isAdLoading = false
+                    }
 
-                override fun onAdFailedToLoad(error: LoadAdError) {
-                    interstitialAd = null
-                    isAdLoading = false
+                    override fun onAdFailedToLoad(error: LoadAdError) {
+                        interstitialAd = null
+                        isAdLoading = false
+                    }
                 }
-            }
-        )
+            )
+        } catch (_: Exception) {
+            isAdLoading = false
+        }
     }
 
     /**

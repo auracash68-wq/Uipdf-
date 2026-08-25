@@ -64,9 +64,11 @@ import com.example.R
 import com.example.engine.FileUtils
 import com.example.model.RecentPdf
 import com.example.model.UserEntitlement
+import com.example.engine.NetworkUtils
 import com.example.ui.PdfViewModel
 import com.example.ui.components.AdBannerContainer
 import com.example.ui.components.BentoGridCard
+import com.example.ui.components.InternetRequiredDialog
 import com.example.ui.components.PremiumBannerCard
 import java.io.File
 
@@ -80,6 +82,15 @@ fun HomeScreen(
     val context = LocalContext.current
     val entitlement by viewModel.entitlement.collectAsState()
     val previewRecents by viewModel.previewRecentPdfs.collectAsState()
+    var showInternetRequiredDialog by remember { mutableStateOf(false) }
+
+    fun handleToolClick(toolRoute: String) {
+        if (!viewModel.isOperationAllowed(context)) {
+            showInternetRequiredDialog = true
+        } else {
+            onNavigateToTool(toolRoute)
+        }
+    }
 
     LazyColumn(
         modifier = Modifier
@@ -106,7 +117,7 @@ fun HomeScreen(
         // 3. Bento Grid - Primary PDF Operations
         item {
             BentoToolsGrid(
-                onNavigateToTool = onNavigateToTool
+                onNavigateToTool = { handleToolClick(it) }
             )
         }
 
@@ -118,6 +129,21 @@ fun HomeScreen(
                 modifier = Modifier.padding(horizontal = 18.dp)
             )
         }
+    }
+
+    // Internet Required Warning for Free Mode
+    if (showInternetRequiredDialog) {
+        InternetRequiredDialog(
+            onDismiss = { showInternetRequiredDialog = false },
+            onOpenSettings = {
+                NetworkUtils.openInternetSettings(context)
+                showInternetRequiredDialog = false
+            },
+            onGetPremium = {
+                showInternetRequiredDialog = false
+                onNavigateToPremium()
+            }
+        )
     }
 }
 

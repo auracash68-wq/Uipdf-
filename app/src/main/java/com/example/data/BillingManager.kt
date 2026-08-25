@@ -8,6 +8,7 @@ import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.BillingClientStateListener
 import com.android.billingclient.api.BillingFlowParams
 import com.android.billingclient.api.BillingResult
+import com.android.billingclient.api.PendingPurchasesParams
 import com.android.billingclient.api.ProductDetails
 import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.PurchasesUpdatedListener
@@ -50,26 +51,34 @@ class BillingManager(private val context: Context) : PurchasesUpdatedListener {
 
     private val billingClient: BillingClient = BillingClient.newBuilder(context)
         .setListener(this)
-        .enablePendingPurchases()
+        .enablePendingPurchases(
+            PendingPurchasesParams.newBuilder()
+                .enableOneTimeProducts()
+                .build()
+        )
         .build()
 
     init {
-        startBillingConnection()
+        try {
+            startBillingConnection()
+        } catch (_: Exception) {}
     }
 
     fun startBillingConnection() {
-        billingClient.startConnection(object : BillingClientStateListener {
-            override fun onBillingSetupFinished(billingResult: BillingResult) {
-                if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
-                    queryPurchases()
-                    queryProductDetails()
+        try {
+            billingClient.startConnection(object : BillingClientStateListener {
+                override fun onBillingSetupFinished(billingResult: BillingResult) {
+                    if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
+                        queryPurchases()
+                        queryProductDetails()
+                    }
                 }
-            }
 
-            override fun onBillingServiceDisconnected() {
-                // Connection will be re-attempted on demand or app foreground
-            }
-        })
+                override fun onBillingServiceDisconnected() {
+                    // Connection will be re-attempted on demand or app foreground
+                }
+            })
+        } catch (_: Exception) {}
     }
 
     private fun queryProductDetails() {

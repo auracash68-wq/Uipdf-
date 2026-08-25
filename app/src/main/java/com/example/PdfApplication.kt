@@ -27,8 +27,10 @@ class PdfApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        // Initialize PDFBox for Android
-        PDFBoxResourceLoader.init(applicationContext)
+        try {
+            // Initialize PDFBox for Android
+            PDFBoxResourceLoader.init(applicationContext)
+        } catch (_: Exception) {}
 
         // Initialize Room DB & Repositories
         database = AppDatabase.getDatabase(this)
@@ -38,7 +40,9 @@ class PdfApplication : Application() {
         settingsRepository = SettingsRepository(this)
         pdfProcessor = PdfProcessor(this)
 
-        // Clean up any stale temporary processing files from prior sessions
-        FileUtils.cleanTempFiles(this)
+        try {
+            // Clean up any stale temporary processing files from prior sessions
+            FileUtils.cleanTempFiles(this)
+        } catch (_: Exception) {}
     }
 }

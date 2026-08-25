@@ -27,24 +27,41 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.R
+import com.example.engine.NetworkUtils
 import com.example.ui.PdfViewModel
 import com.example.ui.components.AdBannerContainer
 import com.example.ui.components.BentoGridCard
+import com.example.ui.components.InternetRequiredDialog
 
 @Composable
 fun ToolsScreen(
     viewModel: PdfViewModel,
-    onNavigateToTool: (String) -> Unit
+    onNavigateToTool: (String) -> Unit,
+    onNavigateToPremium: () -> Unit = {}
 ) {
+    val context = LocalContext.current
     val entitlement by viewModel.entitlement.collectAsState()
+    var showInternetRequiredDialog by remember { mutableStateOf(false) }
+
+    fun handleToolClick(toolRoute: String) {
+        if (!viewModel.isOperationAllowed(context)) {
+            showInternetRequiredDialog = true
+        } else {
+            onNavigateToTool(toolRoute)
+        }
+    }
 
     LazyColumn(
         modifier = Modifier
@@ -107,7 +124,7 @@ fun ToolsScreen(
                         iconBgColor = Color(0xFFEEF2FF),
                         iconTintColor = Color(0xFF4F46E5),
                         modifier = Modifier.weight(1f),
-                        onClick = { onNavigateToTool("merge") }
+                        onClick = { handleToolClick("merge") }
                     )
 
                     BentoGridCard(
@@ -117,7 +134,7 @@ fun ToolsScreen(
                         iconBgColor = Color(0xFFFEF3C7),
                         iconTintColor = Color(0xFFD97706),
                         modifier = Modifier.weight(1f),
-                        onClick = { onNavigateToTool("split") }
+                        onClick = { handleToolClick("split") }
                     )
                 }
 
@@ -132,7 +149,7 @@ fun ToolsScreen(
                         iconBgColor = Color(0xFFEFF6FF),
                         iconTintColor = Color(0xFF2563EB),
                         modifier = Modifier.weight(1f),
-                        onClick = { onNavigateToTool("extract") }
+                        onClick = { handleToolClick("extract") }
                     )
 
                     BentoGridCard(
@@ -142,7 +159,7 @@ fun ToolsScreen(
                         iconBgColor = Color(0xFFF0FDF4),
                         iconTintColor = Color(0xFF16A34A),
                         modifier = Modifier.weight(1f),
-                        onClick = { onNavigateToTool("rotate") }
+                        onClick = { handleToolClick("rotate") }
                     )
                 }
             }
@@ -180,7 +197,7 @@ fun ToolsScreen(
                         iconBgColor = Color(0xFFEFF6FF),
                         iconTintColor = Color(0xFF2563EB),
                         modifier = Modifier.weight(1f),
-                        onClick = { onNavigateToTool("image_to_pdf") }
+                        onClick = { handleToolClick("image_to_pdf") }
                     )
 
                     BentoGridCard(
@@ -190,7 +207,7 @@ fun ToolsScreen(
                         iconBgColor = Color(0xFFFAF5FF),
                         iconTintColor = Color(0xFF9333EA),
                         modifier = Modifier.weight(1f),
-                        onClick = { onNavigateToTool("text_to_pdf") }
+                        onClick = { handleToolClick("text_to_pdf") }
                     )
                 }
             }
@@ -228,7 +245,7 @@ fun ToolsScreen(
                         iconBgColor = Color(0xFFECFDF5),
                         iconTintColor = Color(0xFF059669),
                         modifier = Modifier.weight(1f),
-                        onClick = { onNavigateToTool("lock") }
+                        onClick = { handleToolClick("lock") }
                     )
 
                     BentoGridCard(
@@ -238,7 +255,7 @@ fun ToolsScreen(
                         iconBgColor = Color(0xFFFFFBEB),
                         iconTintColor = Color(0xFFD97706),
                         modifier = Modifier.weight(1f),
-                        onClick = { onNavigateToTool("unlock") }
+                        onClick = { handleToolClick("unlock") }
                     )
                 }
 
@@ -253,7 +270,7 @@ fun ToolsScreen(
                         iconBgColor = Color(0xFFF0FDF4),
                         iconTintColor = Color(0xFF16A34A),
                         modifier = Modifier.weight(1f),
-                        onClick = { onNavigateToTool("compress") }
+                        onClick = { handleToolClick("compress") }
                     )
 
                     BentoGridCard(
@@ -263,7 +280,7 @@ fun ToolsScreen(
                         iconBgColor = Color(0xFFEEF2FF),
                         iconTintColor = Color(0xFF4F46E5),
                         modifier = Modifier.weight(1f),
-                        onClick = { onNavigateToTool("sign") }
+                        onClick = { handleToolClick("sign") }
                     )
                 }
             }
@@ -276,5 +293,20 @@ fun ToolsScreen(
                 modifier = Modifier.padding(horizontal = 18.dp)
             )
         }
+    }
+
+    // Internet Required Warning for Free Mode
+    if (showInternetRequiredDialog) {
+        InternetRequiredDialog(
+            onDismiss = { showInternetRequiredDialog = false },
+            onOpenSettings = {
+                NetworkUtils.openInternetSettings(context)
+                showInternetRequiredDialog = false
+            },
+            onGetPremium = {
+                showInternetRequiredDialog = false
+                onNavigateToPremium()
+            }
+        )
     }
 }
