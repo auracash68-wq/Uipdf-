@@ -81,10 +81,10 @@ class AdManager(
      * Call after a PDF operation completes successfully.
      * Checks frequency capping and presents interstitial if eligible.
      */
-    fun onOperationCompleted(activity: Activity, onAdDismissedOrSkipped: () -> Unit) {
+    fun onOperationCompleted(activity: Activity?, onAdDismissedOrSkipped: () -> Unit) {
         completedOperationsCount++
 
-        if (isPremium()) {
+        if (isPremium() || activity == null) {
             onAdDismissedOrSkipped()
             return
         }

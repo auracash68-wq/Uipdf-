@@ -68,6 +68,7 @@ import com.example.ui.components.PrimaryButton
 import com.example.ui.components.ProcessingProgressDialog
 import com.example.ui.components.SuccessResultDialog
 import com.example.ui.components.ToolGuideAndAdSection
+import com.example.ui.components.findActivity
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -88,7 +89,6 @@ fun LockPdfScreen(
     var showPassword by remember { mutableStateOf(false) }
     var outputName by remember { mutableStateOf("Locked_Document") }
     var errorMessage by remember { mutableStateOf<String?>(null) }
-    var showInternetRequiredDialog by remember { mutableStateOf(false) }
 
     val filePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument()
@@ -281,11 +281,7 @@ fun LockPdfScreen(
                             }
                             val uri = selectedUri
                             if (uri != null) {
-                                if (!viewModel.isOperationAllowed(context)) {
-                                    showInternetRequiredDialog = true
-                                } else if (context is Activity) {
-                                    viewModel.lockPdf(context, uri, password, outputName)
-                                }
+                                viewModel.lockPdf(context.findActivity(), uri, password, outputName)
                             }
                         },
                         testTag = "lock_action_button"
@@ -313,21 +309,6 @@ fun LockPdfScreen(
                 )
             }
         }
-    }
-
-    // Internet Required Warning for Free Mode
-    if (showInternetRequiredDialog) {
-        InternetRequiredDialog(
-            onDismiss = { showInternetRequiredDialog = false },
-            onOpenSettings = {
-                NetworkUtils.openInternetSettings(context)
-                showInternetRequiredDialog = false
-            },
-            onGetPremium = {
-                showInternetRequiredDialog = false
-                onNavigateToPremium()
-            }
-        )
     }
 
     // Dialogs

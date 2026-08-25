@@ -64,6 +64,7 @@ import com.example.ui.components.PrimaryButton
 import com.example.ui.components.ProcessingProgressDialog
 import com.example.ui.components.SuccessResultDialog
 import com.example.ui.components.ToolGuideAndAdSection
+import com.example.ui.components.findActivity
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -84,7 +85,6 @@ fun RotatePagesScreen(
     var customPageInput by remember { mutableStateOf("1") }
     var outputName by remember { mutableStateOf("Rotated_Document") }
     var errorMessage by remember { mutableStateOf<String?>(null) }
-    var showInternetRequiredDialog by remember { mutableStateOf(false) }
 
     val filePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument()
@@ -281,11 +281,7 @@ fun RotatePagesScreen(
                         onClick = {
                             val uri = selectedUri
                             if (uri != null) {
-                                if (!viewModel.isOperationAllowed(context)) {
-                                    showInternetRequiredDialog = true
-                                } else if (context is Activity) {
-                                    viewModel.rotatePdf(context, uri, rotationAngle, null, outputName)
-                                }
+                                viewModel.rotatePdf(context.findActivity(), uri, rotationAngle, null, outputName)
                             }
                         },
                         testTag = "rotate_action_button"
@@ -313,21 +309,6 @@ fun RotatePagesScreen(
                 )
             }
         }
-    }
-
-    // Internet Required Warning for Free Mode
-    if (showInternetRequiredDialog) {
-        InternetRequiredDialog(
-            onDismiss = { showInternetRequiredDialog = false },
-            onOpenSettings = {
-                NetworkUtils.openInternetSettings(context)
-                showInternetRequiredDialog = false
-            },
-            onGetPremium = {
-                showInternetRequiredDialog = false
-                onNavigateToPremium()
-            }
-        )
     }
 
     // Dialogs

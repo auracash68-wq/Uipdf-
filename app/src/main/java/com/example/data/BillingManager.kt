@@ -49,24 +49,26 @@ class BillingManager(private val context: Context) : PurchasesUpdatedListener {
 
     private var productDetails: ProductDetails? = null
 
-    private val billingClient: BillingClient = BillingClient.newBuilder(context)
-        .setListener(this)
-        .enablePendingPurchases(
-            PendingPurchasesParams.newBuilder()
-                .enableOneTimeProducts()
-                .build()
-        )
-        .build()
+    private var billingClient: BillingClient? = null
 
     init {
         try {
+            billingClient = BillingClient.newBuilder(context)
+                .setListener(this)
+                .enablePendingPurchases(
+                    PendingPurchasesParams.newBuilder()
+                        .enableOneTimeProducts()
+                        .build()
+                )
+                .build()
             startBillingConnection()
-        } catch (_: Exception) {}
+        } catch (_: Throwable) {}
     }
 
     fun startBillingConnection() {
+        val client = billingClient ?: return
         try {
-            billingClient.startConnection(object : BillingClientStateListener {
+            client.startConnection(object : BillingClientStateListener {
                 override fun onBillingSetupFinished(billingResult: BillingResult) {
                     if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
                         queryPurchases()
@@ -78,42 +80,58 @@ class BillingManager(private val context: Context) : PurchasesUpdatedListener {
                     // Connection will be re-attempted on demand or app foreground
                 }
             })
-        } catch (_: Exception) {}
+        } catch (_: Throwable) {}
     }
 
     private fun queryProductDetails() {
-        val productList = listOf(
-            QueryProductDetailsParams.Product.newBuilder()
-                .setProductId(PRODUCT_ID_PREMIUM)
-                .setProductType(BillingClient.ProductType.INAPP)
-                .build()
-        )
-
-        val params = QueryProductDetailsParams.newBuilder()
-            .setProductList(productList)
-            .build()
-
-        billingClient.queryProductDetailsAsync(params) { billingResult, queryProductDetailsResult ->
-            if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
-                productDetails = queryProductDetailsResult.firstOrNull { it.productId == PRODUCT_ID_PREMIUM }
-            }
-        }
-    }
-
-    fun launchPurchaseFlow(activity: Activity) {
-        val details = productDetails
-        if (details != null) {
-            val productDetailsParamsList = listOf(
-                BillingFlowParams.ProductDetailsParams.newBuilder()
-                    .setProductDetails(details)
+        val client = billingClient ?: return
+        try {
+            val productList = listOf(
+                QueryProductDetailsParams.Product.newBuilder()
+                    .setProductId(PRODUCT_ID_PREMIUM)
+                    .setProductType(BillingClient.ProductType.INAPP)
                     .build()
             )
 
-            val billingFlowParams = BillingFlowParams.newBuilder()
-                .setProductDetailsParamsList(productDetailsParamsList)
+            val params = QueryProductDetailsParams.newBuilder()
+                .setProductList(productList)
                 .build()
 
-            billingClient.launchBillingFlow(activity, billingFlowParams)
+            client.queryProductDetailsAsync(params) { billingResult, queryProductDetailsResult ->
+                if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
+                    productDetails = queryProductDetailsResult.firstOrNull { it.productId == PRODUCT_ID_PREMIUM }
+                }
+            }
+        } catch (_: Throwable) {}
+    }
+
+    fun launchPurchaseFlow(activity: Activity) {
+        val client = billingClient
+        if (client == null) {
+            scope.launch {
+                _billingMessage.emit("Google Play Billing is not available on this device.")
+            }
+            return
+        }
+        val details = productDetails
+        if (details != null) {
+            try {
+                val productDetailsParamsList = listOf(
+                    BillingFlowParams.ProductDetailsParams.newBuilder()
+                        .setProductDetails(details)
+                        .build()
+                )
+
+                val billingFlowParams = BillingFlowParams.newBuilder()
+                    .setProductDetailsParamsList(productDetailsParamsList)
+                    .build()
+
+                client.launchBillingFlow(activity, billingFlowParams)
+            } catch (e: Throwable) {
+                scope.launch {
+                    _billingMessage.emit("Failed to launch purchase: ${e.localizedMessage ?: "Unknown error"}")
+                }
+            }
         } else {
             // Re-attempt query and inform user
             queryProductDetails()
@@ -128,31 +146,46 @@ class BillingManager(private val context: Context) : PurchasesUpdatedListener {
     }
 
     private fun queryPurchases(isUserInitiatedRestore: Boolean = false) {
+        val client = billingClient
+        if (client == null) {
+            if (isUserInitiatedRestore) {
+                scope.launch {
+                    _billingMessage.emit("Google Play Store is unavailable.")
+                }
+            }
+            return
+        }
         val params = QueryPurchasesParams.newBuilder()
             .setProductType(BillingClient.ProductType.INAPP)
             .build()
 
         scope.launch {
-            val purchasesResult = billingClient.queryPurchasesAsync(params)
-            if (purchasesResult.billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
-                val hasPremium = purchasesResult.purchasesList.any { purchase ->
-                    purchase.products.contains(PRODUCT_ID_PREMIUM) &&
-                            purchase.purchaseState == Purchase.PurchaseState.PURCHASED
-                }
+            try {
+                val purchasesResult = client.queryPurchasesAsync(params)
+                if (purchasesResult.billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
+                    val hasPremium = purchasesResult.purchasesList.any { purchase ->
+                        purchase.products.contains(PRODUCT_ID_PREMIUM) &&
+                                purchase.purchaseState == Purchase.PurchaseState.PURCHASED
+                    }
 
-                if (hasPremium) {
-                    setPremiumActive(true)
-                    purchasesResult.purchasesList.forEach { handlePurchase(it) }
-                    if (isUserInitiatedRestore) {
-                        _billingMessage.emit("Purchase restored successfully! Premium is active.")
+                    if (hasPremium) {
+                        setPremiumActive(true)
+                        purchasesResult.purchasesList.forEach { handlePurchase(it) }
+                        if (isUserInitiatedRestore) {
+                            _billingMessage.emit("Purchase restored successfully! Premium is active.")
+                        }
+                    } else {
+                        if (isUserInitiatedRestore) {
+                            _billingMessage.emit("No previous purchases found for this Google account.")
+                        }
                     }
-                } else {
-                    if (isUserInitiatedRestore) {
-                        _billingMessage.emit("No previous purchases found for this Google account.")
-                    }
+                } else if (isUserInitiatedRestore) {
+                    _billingMessage.emit("Unable to reach Google Play Store. Check connection.")
                 }
-            } else if (isUserInitiatedRestore) {
-                _billingMessage.emit("Unable to reach Google Play Store. Check connection.")
+            } catch (e: Throwable) {
+                if (isUserInitiatedRestore) {
+                    _billingMessage.emit("Failed to check purchases: ${e.localizedMessage ?: "Error"}")
+                }
             }
         }
     }
@@ -180,20 +213,23 @@ class BillingManager(private val context: Context) : PurchasesUpdatedListener {
     }
 
     private fun handlePurchase(purchase: Purchase) {
+        val client = billingClient ?: return
         if (purchase.products.contains(PRODUCT_ID_PREMIUM)) {
             if (purchase.purchaseState == Purchase.PurchaseState.PURCHASED) {
                 setPremiumActive(true)
 
                 if (!purchase.isAcknowledged) {
-                    val acknowledgePurchaseParams = AcknowledgePurchaseParams.newBuilder()
-                        .setPurchaseToken(purchase.purchaseToken)
-                        .build()
+                    try {
+                        val acknowledgePurchaseParams = AcknowledgePurchaseParams.newBuilder()
+                            .setPurchaseToken(purchase.purchaseToken)
+                            .build()
 
-                    billingClient.acknowledgePurchase(acknowledgePurchaseParams) { ackResult ->
-                        if (ackResult.responseCode == BillingClient.BillingResponseCode.OK) {
-                            setPremiumActive(true)
+                        client.acknowledgePurchase(acknowledgePurchaseParams) { ackResult ->
+                            if (ackResult.responseCode == BillingClient.BillingResponseCode.OK) {
+                                setPremiumActive(true)
+                            }
                         }
-                    }
+                    } catch (_: Throwable) {}
                 }
             } else if (purchase.purchaseState == Purchase.PurchaseState.PENDING) {
                 scope.launch {

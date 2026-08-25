@@ -77,6 +77,7 @@ import com.example.ui.components.PrimaryButton
 import com.example.ui.components.ProcessingProgressDialog
 import com.example.ui.components.SuccessResultDialog
 import com.example.ui.components.ToolGuideAndAdSection
+import com.example.ui.components.findActivity
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -97,7 +98,6 @@ fun ImageToPdfScreen(
     var quality by remember { mutableStateOf(ImageQualityPreset.BALANCED) }
     var outputName by remember { mutableStateOf("Photos_Document") }
     var errorMessage by remember { mutableStateOf<String?>(null) }
-    var showInternetRequiredDialog by remember { mutableStateOf(false) }
 
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetMultipleContents()
@@ -381,19 +381,15 @@ fun ImageToPdfScreen(
                     PrimaryButton(
                         text = stringResource(R.string.btn_create_pdf),
                         onClick = {
-                            if (!viewModel.isOperationAllowed(context)) {
-                                showInternetRequiredDialog = true
-                            } else if (context is Activity) {
-                                viewModel.imagesToPdf(
-                                    context,
-                                    selectedImages.map { it.uri },
-                                    pageSize,
-                                    orientation,
-                                    margin,
-                                    quality,
-                                    outputName
-                                )
-                            }
+                            viewModel.imagesToPdf(
+                                context.findActivity(),
+                                selectedImages.map { it.uri },
+                                pageSize,
+                                orientation,
+                                margin,
+                                quality,
+                                outputName
+                            )
                         },
                         testTag = "create_pdf_button"
                     )
@@ -420,21 +416,6 @@ fun ImageToPdfScreen(
                 )
             }
         }
-    }
-
-    // Internet Required Warning for Free Mode
-    if (showInternetRequiredDialog) {
-        InternetRequiredDialog(
-            onDismiss = { showInternetRequiredDialog = false },
-            onOpenSettings = {
-                NetworkUtils.openInternetSettings(context)
-                showInternetRequiredDialog = false
-            },
-            onGetPremium = {
-                showInternetRequiredDialog = false
-                onNavigateToPremium()
-            }
-        )
     }
 
     // Dialogs

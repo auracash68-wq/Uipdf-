@@ -103,6 +103,7 @@ import com.example.ui.components.SignaturePad
 import com.example.ui.components.SuccessResultDialog
 import com.example.ui.components.ToolGuideAndAdSection
 import com.example.ui.components.exportSignatureToBitmap
+import com.example.ui.components.findActivity
 import com.example.ui.components.processImportedSignature
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
@@ -132,7 +133,6 @@ fun SignPdfScreen(
     var allPages by remember { mutableStateOf(false) }
     var outputName by remember { mutableStateOf("Signed_Document") }
     var errorMessage by remember { mutableStateOf<String?>(null) }
-    var showInternetRequiredDialog by remember { mutableStateOf(false) }
 
     // Signature mode & assets
     var inputMode by remember { mutableStateOf(SignatureInputMode.DRAW) }
@@ -724,22 +724,18 @@ fun SignPdfScreen(
 
                             val uri = selectedUri
                             if (uri != null) {
-                                if (!viewModel.isOperationAllowed(context)) {
-                                    showInternetRequiredDialog = true
-                                } else if (context is Activity) {
-                                    viewModel.signPdf(
-                                        activity = context,
-                                        sourceUri = uri,
-                                        signatureBitmap = activeBitmap,
-                                        targetPageNumber = targetPage,
-                                        normX = normX,
-                                        normY = normY,
-                                        normWidth = sigScale,
-                                        normHeight = sigScale * 0.45f,
-                                        allPages = allPages,
-                                        outputName = outputName
-                                    )
-                                }
+                                viewModel.signPdf(
+                                    activity = context.findActivity(),
+                                    sourceUri = uri,
+                                    signatureBitmap = activeBitmap,
+                                    targetPageNumber = targetPage,
+                                    normX = normX,
+                                    normY = normY,
+                                    normWidth = sigScale,
+                                    normHeight = sigScale * 0.45f,
+                                    allPages = allPages,
+                                    outputName = outputName
+                                )
                             }
                         },
                         testTag = "sign_action_button"
@@ -788,21 +784,6 @@ fun SignPdfScreen(
                 )
             }
         }
-    }
-
-    // Internet Required Warning for Free Mode
-    if (showInternetRequiredDialog) {
-        InternetRequiredDialog(
-            onDismiss = { showInternetRequiredDialog = false },
-            onOpenSettings = {
-                NetworkUtils.openInternetSettings(context)
-                showInternetRequiredDialog = false
-            },
-            onGetPremium = {
-                showInternetRequiredDialog = false
-                onNavigateToPremium()
-            }
-        )
     }
 
     // Dialogs

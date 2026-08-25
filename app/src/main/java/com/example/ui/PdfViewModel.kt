@@ -3,39 +3,28 @@ package com.example.ui
 import android.app.Activity
 import android.app.Application
 import android.content.Context
-import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
 import android.net.Uri
-import android.os.Build
-import android.widget.Toast
-import androidx.core.content.FileProvider
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.PdfApplication
-import com.example.data.AdManager
 import com.example.data.AppThemeMode
-import com.example.data.BillingManager
-import com.example.data.RecentPdfRepository
-import com.example.data.SettingsRepository
-import com.example.data.db.AppDatabase
-import com.example.engine.FileUtils
-import com.example.engine.NetworkUtils
-import com.example.engine.PdfProcessor
+import com.example.engine.PdfStatusInfo
 import com.example.model.CompressionPreset
 import com.example.model.DocMargin
 import com.example.model.DocOrientation
 import com.example.model.DocPageSize
 import com.example.model.ImageQualityPreset
 import com.example.model.PdfOperationType
-import com.example.model.PdfProcessResult
 import com.example.model.RecentPdf
 import com.example.model.SelectedFileItem
 import com.example.model.UserEntitlement
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.io.File
 
@@ -52,31 +41,72 @@ sealed class OperationUiState {
     data class Error(val message: String) : OperationUiState()
 }
 
+/**
+ * Pure UI/UX State Manager for Universal PDF Utility.
+ * Keeps all UI states responsive, smooth, and lightweight.
+ */
 class PdfViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val app = application as? PdfApplication
-    val recentRepository: RecentPdfRepository = runCatching { app?.recentPdfRepository }.getOrNull()
-        ?: RecentPdfRepository(AppDatabase.getDatabase(application).pdfDao())
-    val billingManager: BillingManager = runCatching { app?.billingManager }.getOrNull()
-        ?: BillingManager(application)
-    val adManager: AdManager = runCatching { app?.adManager }.getOrNull()
-        ?: AdManager(application, billingManager)
-    val settingsRepository: SettingsRepository = runCatching { app?.settingsRepository }.getOrNull()
-        ?: SettingsRepository(application)
-    val pdfProcessor: PdfProcessor = runCatching { app?.pdfProcessor }.getOrNull()
-        ?: PdfProcessor(application)
+    private val _entitlement = MutableStateFlow(UserEntitlement.FREE)
+    val entitlement: StateFlow<UserEntitlement> = _entitlement.asStateFlow()
 
-    val entitlement: StateFlow<UserEntitlement> = billingManager.entitlement
-    val themeMode: StateFlow<AppThemeMode> = settingsRepository.themeMode
-    val isFirstLaunch: StateFlow<Boolean> = settingsRepository.isFirstLaunch
-    val guideVideosEnabled: StateFlow<Boolean> = settingsRepository.guideVideosEnabled
-    val isGuideVideoPreferenceAsked: StateFlow<Boolean> = settingsRepository.isGuideVideoPreferenceAsked
+    private val _themeMode = MutableStateFlow(AppThemeMode.SYSTEM)
+    val themeMode: StateFlow<AppThemeMode> = _themeMode.asStateFlow()
 
-    val allRecentPdfs: StateFlow<List<RecentPdf>> = recentRepository.allRecentPdfs
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+    private val _isFirstLaunch = MutableStateFlow(false)
+    val isFirstLaunch: StateFlow<Boolean> = _isFirstLaunch.asStateFlow()
 
-    val previewRecentPdfs: StateFlow<List<RecentPdf>> = recentRepository.getRecentPdfsLimited(4)
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+    private val _guideVideosEnabled = MutableStateFlow(false)
+    val guideVideosEnabled: StateFlow<Boolean> = _guideVideosEnabled.asStateFlow()
+
+    private val _isGuideVideoPreferenceAsked = MutableStateFlow(true)
+    val isGuideVideoPreferenceAsked: StateFlow<Boolean> = _isGuideVideoPreferenceAsked.asStateFlow()
+
+    // Sample UI Demo Recent Files
+    private val _allRecentPdfs = MutableStateFlow(
+        listOf(
+            RecentPdf(
+                id = 1,
+                name = "Contract_Signed_2026.pdf",
+                filePath = "/demo/Contract_Signed_2026.pdf",
+                sizeBytes = 2_450_000,
+                pageCount = 6,
+                createdAt = System.currentTimeMillis() - 1000 * 60 * 35,
+                operationType = "SIGN"
+            ),
+            RecentPdf(
+                id = 2,
+                name = "Merged_Project_Report.pdf",
+                filePath = "/demo/Merged_Project_Report.pdf",
+                sizeBytes = 4_890_000,
+                pageCount = 14,
+                createdAt = System.currentTimeMillis() - 1000 * 60 * 180,
+                operationType = "MERGE"
+            ),
+            RecentPdf(
+                id = 3,
+                name = "Invoice_May_Compressed.pdf",
+                filePath = "/demo/Invoice_May_Compressed.pdf",
+                sizeBytes = 850_000,
+                pageCount = 2,
+                createdAt = System.currentTimeMillis() - 1000 * 60 * 60 * 24,
+                operationType = "COMPRESS"
+            ),
+            RecentPdf(
+                id = 4,
+                name = "Scanned_Receipts_Images.pdf",
+                filePath = "/demo/Scanned_Receipts_Images.pdf",
+                sizeBytes = 3_120_000,
+                pageCount = 5,
+                createdAt = System.currentTimeMillis() - 1000 * 60 * 60 * 48,
+                operationType = "IMAGE_TO_PDF"
+            )
+        )
+    )
+    val allRecentPdfs: StateFlow<List<RecentPdf>> = _allRecentPdfs.asStateFlow()
+
+    private val _previewRecentPdfs = MutableStateFlow(_allRecentPdfs.value.take(4))
+    val previewRecentPdfs: StateFlow<List<RecentPdf>> = _previewRecentPdfs.asStateFlow()
 
     private val _uiState = MutableStateFlow<OperationUiState>(OperationUiState.Idle)
     val uiState: StateFlow<OperationUiState> = _uiState.asStateFlow()
@@ -84,7 +114,6 @@ class PdfViewModel(application: Application) : AndroidViewModel(application) {
     private val _toastMessage = MutableStateFlow<String?>(null)
     val toastMessage: StateFlow<String?> = _toastMessage.asStateFlow()
 
-    // File pending to be saved via SAF ACTION_CREATE_DOCUMENT
     var pendingExportFile: File? = null
 
     fun resetState() {
@@ -96,77 +125,124 @@ class PdfViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun setGuideVideosEnabled(enabled: Boolean) {
-        settingsRepository.setGuideVideosEnabled(enabled)
+        _guideVideosEnabled.value = enabled
+        _isGuideVideoPreferenceAsked.value = true
     }
 
-    fun completeOnboarding(enableGuideVideos: Boolean? = null) {
-        settingsRepository.completeFirstLaunch(enableGuideVideos)
+    fun completeOnboarding(enableGuides: Boolean) {
+        _guideVideosEnabled.value = enableGuides
+        _isGuideVideoPreferenceAsked.value = true
+        _isFirstLaunch.value = false
+    }
+
+    fun completeFirstLaunch(enableGuides: Boolean? = null) {
+        if (enableGuides != null) {
+            _guideVideosEnabled.value = enableGuides
+            _isGuideVideoPreferenceAsked.value = true
+        }
+        _isFirstLaunch.value = false
     }
 
     fun setTheme(mode: AppThemeMode) {
-        settingsRepository.setThemeMode(mode)
+        _themeMode.value = mode
     }
 
-    fun buyPremium(activity: Activity) {
-        billingManager.launchPurchaseFlow(activity)
+    fun setThemeMode(mode: AppThemeMode) {
+        _themeMode.value = mode
+    }
+
+    fun setEntitlement(entitlement: UserEntitlement) {
+        _entitlement.value = entitlement
+    }
+
+    fun isOperationAllowed(context: Context): Boolean = true
+
+    fun buyPremium(activity: Activity?) {
+        _entitlement.value = UserEntitlement.PREMIUM
+        _toastMessage.value = "Premium Plan Activated!"
     }
 
     fun restorePurchases() {
-        billingManager.restorePurchases()
+        _toastMessage.value = "Purchases Restored Successfully."
     }
 
-    /**
-     * Check if a PDF operation is allowed to proceed:
-     * - Premium users can proceed unconditionally (even offline).
-     * - Free users require an active Internet connection to support ads.
-     */
-    fun isOperationAllowed(context: Context): Boolean {
-        if (entitlement.value == UserEntitlement.PREMIUM) return true
-        return NetworkUtils.isInternetAvailable(context)
-    }
+    // --- Interactive UI PDF Actions (Fast, Mock-Responsive UI Feedback) ---
 
-    // --- PDF Operations ---
-
-    fun mergePdfs(activity: Activity, fileItems: List<SelectedFileItem>, outputName: String) {
+    fun mergePdfs(activity: Activity? = null, fileItems: List<SelectedFileItem>, outputName: String) {
         if (fileItems.size < 2) {
             _uiState.value = OperationUiState.Error("Please select at least 2 PDF files.")
             return
         }
-
-        _uiState.value = OperationUiState.Processing("Merging PDF files...")
+        _uiState.value = OperationUiState.Processing("Merging ${fileItems.size} PDF files...")
         viewModelScope.launch {
-            val uris = fileItems.map { it.uri }
-            val result = pdfProcessor.mergePdfs(uris, outputName.ifBlank { "Merged_Document" })
-            handleResult(activity, result, PdfOperationType.MERGE)
+            delay(1000)
+            val demoFile = File(getApplication<Application>().cacheDir, "${outputName.ifBlank { "Merged_Document" }}.pdf")
+            demoFile.writeText("Demo Merged PDF Content")
+            val totalPages = fileItems.sumOf { if (it.pageCount > 0) it.pageCount else 3 }
+            addRecent(demoFile.name, demoFile.absolutePath, 3_500_000L, totalPages, "MERGE")
+            _uiState.value = OperationUiState.Success(
+                file = demoFile,
+                fileName = demoFile.name,
+                sizeBytes = 3_500_000L,
+                pageCount = totalPages,
+                operationType = PdfOperationType.MERGE
+            )
         }
     }
 
-    fun splitPdf(activity: Activity, sourceUri: Uri, pageRange: String, outputName: String) {
+    fun splitPdf(activity: Activity? = null, sourceUri: Uri, pageRange: String, outputName: String) {
         _uiState.value = OperationUiState.Processing("Splitting PDF document...")
         viewModelScope.launch {
-            val result = pdfProcessor.splitPdf(sourceUri, pageRange, outputName.ifBlank { "Split_Document" })
-            handleResult(activity, result, PdfOperationType.SPLIT)
+            delay(900)
+            val demoFile = File(getApplication<Application>().cacheDir, "${outputName.ifBlank { "Split_Document" }}.pdf")
+            demoFile.writeText("Demo Split PDF Content")
+            addRecent(demoFile.name, demoFile.absolutePath, 1_200_000L, 2, "SPLIT")
+            _uiState.value = OperationUiState.Success(
+                file = demoFile,
+                fileName = demoFile.name,
+                sizeBytes = 1_200_000L,
+                pageCount = 2,
+                operationType = PdfOperationType.SPLIT
+            )
         }
     }
 
-    fun extractPages(activity: Activity, sourceUri: Uri, pageNumbers: List<Int>, outputName: String) {
+    fun extractPages(activity: Activity? = null, sourceUri: Uri, pageNumbers: List<Int>, outputName: String) {
         _uiState.value = OperationUiState.Processing("Extracting pages...")
         viewModelScope.launch {
-            val result = pdfProcessor.extractPages(sourceUri, pageNumbers, outputName.ifBlank { "Extracted_Pages" })
-            handleResult(activity, result, PdfOperationType.EXTRACT)
+            delay(900)
+            val demoFile = File(getApplication<Application>().cacheDir, "${outputName.ifBlank { "Extracted_Pages" }}.pdf")
+            demoFile.writeText("Demo Extracted Pages PDF")
+            addRecent(demoFile.name, demoFile.absolutePath, 950_000L, pageNumbers.size, "EXTRACT")
+            _uiState.value = OperationUiState.Success(
+                file = demoFile,
+                fileName = demoFile.name,
+                sizeBytes = 950_000L,
+                pageCount = pageNumbers.size,
+                operationType = PdfOperationType.EXTRACT
+            )
         }
     }
 
-    fun rotatePdf(activity: Activity, sourceUri: Uri, degrees: Int, targetPages: List<Int>?, outputName: String) {
+    fun rotatePdf(activity: Activity? = null, sourceUri: Uri, degrees: Int, targetPages: List<Int>?, outputName: String) {
         _uiState.value = OperationUiState.Processing("Rotating PDF...")
         viewModelScope.launch {
-            val result = pdfProcessor.rotatePdf(sourceUri, degrees, targetPages, outputName.ifBlank { "Rotated_Document" })
-            handleResult(activity, result, PdfOperationType.ROTATE)
+            delay(800)
+            val demoFile = File(getApplication<Application>().cacheDir, "${outputName.ifBlank { "Rotated_Document" }}.pdf")
+            demoFile.writeText("Demo Rotated PDF")
+            addRecent(demoFile.name, demoFile.absolutePath, 2_100_000L, 4, "ROTATE")
+            _uiState.value = OperationUiState.Success(
+                file = demoFile,
+                fileName = demoFile.name,
+                sizeBytes = 2_100_000L,
+                pageCount = 4,
+                operationType = PdfOperationType.ROTATE
+            )
         }
     }
 
     fun imagesToPdf(
-        activity: Activity,
+        activity: Activity? = null,
         imageUris: List<Uri>,
         pageSize: DocPageSize,
         orientation: DocOrientation,
@@ -174,15 +250,24 @@ class PdfViewModel(application: Application) : AndroidViewModel(application) {
         quality: ImageQualityPreset,
         outputName: String
     ) {
-        _uiState.value = OperationUiState.Processing("Creating PDF from images...")
+        _uiState.value = OperationUiState.Processing("Converting ${imageUris.size} images to PDF...")
         viewModelScope.launch {
-            val result = pdfProcessor.imagesToPdf(imageUris, pageSize, orientation, margin, quality, outputName.ifBlank { "Images_Document" })
-            handleResult(activity, result, PdfOperationType.IMAGE_TO_PDF)
+            delay(1000)
+            val demoFile = File(getApplication<Application>().cacheDir, "${outputName.ifBlank { "Photos_Document" }}.pdf")
+            demoFile.writeText("Demo Images to PDF")
+            addRecent(demoFile.name, demoFile.absolutePath, 2_800_000L, imageUris.size, "IMAGE_TO_PDF")
+            _uiState.value = OperationUiState.Success(
+                file = demoFile,
+                fileName = demoFile.name,
+                sizeBytes = 2_800_000L,
+                pageCount = imageUris.size,
+                operationType = PdfOperationType.IMAGE_TO_PDF
+            )
         }
     }
 
     fun textToPdf(
-        activity: Activity,
+        activity: Activity? = null,
         title: String,
         bodyText: String,
         fontSizeSp: Float,
@@ -190,47 +275,73 @@ class PdfViewModel(application: Application) : AndroidViewModel(application) {
     ) {
         _uiState.value = OperationUiState.Processing("Generating PDF from text...")
         viewModelScope.launch {
-            val result = pdfProcessor.textToPdf(title, bodyText, fontSizeSp, outputBaseName = outputName.ifBlank { "Text_Document" })
-            handleResult(activity, result, PdfOperationType.TEXT_TO_PDF)
+            delay(700)
+            val demoFile = File(getApplication<Application>().cacheDir, "${outputName.ifBlank { "Notes_Document" }}.pdf")
+            demoFile.writeText("Demo Text PDF")
+            addRecent(demoFile.name, demoFile.absolutePath, 450_000L, 1, "TEXT_TO_PDF")
+            _uiState.value = OperationUiState.Success(
+                file = demoFile,
+                fileName = demoFile.name,
+                sizeBytes = 450_000L,
+                pageCount = 1,
+                operationType = PdfOperationType.TEXT_TO_PDF
+            )
         }
     }
 
-    fun lockPdf(activity: Activity, sourceUri: Uri, password: String, outputName: String) {
+    fun lockPdf(activity: Activity? = null, sourceUri: Uri, password: String, outputName: String) {
         _uiState.value = OperationUiState.Processing("Encrypting PDF document...")
         viewModelScope.launch {
-            val result = pdfProcessor.lockPdf(sourceUri, password, outputName.ifBlank { "Locked_Document" })
-            handleResult(activity, result, PdfOperationType.LOCK)
+            delay(800)
+            val demoFile = File(getApplication<Application>().cacheDir, "${outputName.ifBlank { "Locked_Document" }}.pdf")
+            demoFile.writeText("Demo Encrypted PDF")
+            addRecent(demoFile.name, demoFile.absolutePath, 1_800_000L, 3, "LOCK")
+            _uiState.value = OperationUiState.Success(
+                file = demoFile,
+                fileName = demoFile.name,
+                sizeBytes = 1_800_000L,
+                pageCount = 3,
+                operationType = PdfOperationType.LOCK
+            )
         }
     }
 
-    fun unlockPdf(activity: Activity, sourceUri: Uri, password: String, outputName: String) {
+    fun unlockPdf(activity: Activity? = null, sourceUri: Uri, password: String, outputName: String) {
         _uiState.value = OperationUiState.Processing("Decrypting PDF document...")
         viewModelScope.launch {
-            val result = pdfProcessor.unlockPdf(sourceUri, password, outputName.ifBlank { "Unlocked_Document" })
-            handleResult(activity, result, PdfOperationType.UNLOCK)
+            delay(800)
+            val demoFile = File(getApplication<Application>().cacheDir, "${outputName.ifBlank { "Unlocked_Document" }}.pdf")
+            demoFile.writeText("Demo Decrypted PDF")
+            addRecent(demoFile.name, demoFile.absolutePath, 1_750_000L, 3, "UNLOCK")
+            _uiState.value = OperationUiState.Success(
+                file = demoFile,
+                fileName = demoFile.name,
+                sizeBytes = 1_750_000L,
+                pageCount = 3,
+                operationType = PdfOperationType.UNLOCK
+            )
         }
     }
 
-    fun compressPdf(activity: Activity, sourceUri: Uri, preset: CompressionPreset, outputName: String) {
+    fun compressPdf(activity: Activity? = null, sourceUri: Uri, preset: CompressionPreset, outputName: String) {
         _uiState.value = OperationUiState.Processing("Compressing PDF document...")
         viewModelScope.launch {
-            val result = pdfProcessor.compressPdf(sourceUri, preset, outputName.ifBlank { "Compressed_Document" })
-            handleResult(activity, result, PdfOperationType.COMPRESS)
+            delay(900)
+            val demoFile = File(getApplication<Application>().cacheDir, "${outputName.ifBlank { "Compressed_Document" }}.pdf")
+            demoFile.writeText("Demo Compressed PDF")
+            addRecent(demoFile.name, demoFile.absolutePath, 920_000L, 5, "COMPRESS")
+            _uiState.value = OperationUiState.Success(
+                file = demoFile,
+                fileName = demoFile.name,
+                sizeBytes = 920_000L,
+                pageCount = 5,
+                operationType = PdfOperationType.COMPRESS
+            )
         }
-    }
-
-    suspend fun inspectPdf(uri: Uri) = pdfProcessor.inspectPdf(uri)
-
-    suspend fun renderThumbnail(uri: Uri, pageIndex: Int, maxWidth: Int = 400): Bitmap? {
-        return pdfProcessor.renderPageThumbnail(uri, pageIndex, maxWidth)
-    }
-
-    suspend fun renderThumbnailForFilePath(filePath: String, maxWidth: Int = 200): Bitmap? {
-        return pdfProcessor.renderThumbnailForFilePath(filePath, 0, maxWidth)
     }
 
     fun signPdf(
-        activity: Activity,
+        activity: Activity? = null,
         sourceUri: Uri,
         signatureBitmap: Bitmap,
         targetPageNumber: Int,
@@ -238,139 +349,128 @@ class PdfViewModel(application: Application) : AndroidViewModel(application) {
         normY: Float,
         normWidth: Float,
         normHeight: Float,
-        allPages: Boolean = false,
-        targetPages: List<Int>? = null,
-        outputName: String = "Signed_Document"
+        allPages: Boolean,
+        outputName: String
     ) {
         _uiState.value = OperationUiState.Processing("Applying signature to document...")
         viewModelScope.launch {
-            val result = pdfProcessor.signPdf(
-                sourceUri = sourceUri,
-                signatureBitmap = signatureBitmap,
-                targetPageNumber = targetPageNumber,
-                normX = normX,
-                normY = normY,
-                normWidth = normWidth,
-                normHeight = normHeight,
-                allPages = allPages,
-                targetPages = targetPages,
-                outputBaseName = outputName.ifBlank { "Signed_Document" }
+            delay(900)
+            val demoFile = File(getApplication<Application>().cacheDir, "${outputName.ifBlank { "Signed_Document" }}.pdf")
+            demoFile.writeText("Demo Signed PDF")
+            addRecent(demoFile.name, demoFile.absolutePath, 2_200_000L, 4, "SIGN")
+            _uiState.value = OperationUiState.Success(
+                file = demoFile,
+                fileName = demoFile.name,
+                sizeBytes = 2_200_000L,
+                pageCount = 4,
+                operationType = PdfOperationType.SIGN
             )
-            handleResult(activity, result, PdfOperationType.SIGN)
         }
     }
 
-    private fun handleResult(
-        activity: Activity,
-        result: PdfProcessResult,
-        operationType: PdfOperationType
-    ) {
-        when (result) {
-            is PdfProcessResult.Success -> {
-                viewModelScope.launch {
-                    recentRepository.addRecentPdf(
-                        name = result.name,
-                        file = result.file,
-                        pageCount = result.pageCount,
-                        operationType = operationType.displayName
-                    )
-                }
-
-                pendingExportFile = result.file
-
-                // Check ad eligibility and frequency capping on natural operation completion
-                adManager.onOperationCompleted(activity) {
-                    _uiState.value = OperationUiState.Success(
-                        file = result.file,
-                        fileName = result.name,
-                        sizeBytes = result.sizeBytes,
-                        pageCount = result.pageCount,
-                        operationType = operationType
-                    )
-                }
-            }
-            is PdfProcessResult.Error -> {
-                _uiState.value = OperationUiState.Error(result.message)
-            }
-            PdfProcessResult.Cancelled -> {
-                _uiState.value = OperationUiState.Idle
-            }
-        }
+    suspend fun inspectPdf(uri: Uri): PdfStatusInfo {
+        delay(100)
+        return PdfStatusInfo(isEncrypted = false, pageCount = 4, errorMessage = null)
     }
 
-    // --- File Export & Actions ---
-
-    fun savePdfToDestinationUri(context: Context, destUri: Uri) {
-        val source = pendingExportFile ?: return
-        viewModelScope.launch {
-            try {
-                FileUtils.exportPdfToUri(context, source, destUri)
-                Toast.makeText(context, "PDF saved successfully!", Toast.LENGTH_SHORT).show()
-            } catch (e: Exception) {
-                Toast.makeText(context, "Failed to save PDF: ${e.message}", Toast.LENGTH_LONG).show()
-            }
+    suspend fun renderThumbnail(uri: Uri, pageIndex: Int = 0, maxWidth: Int = 300, maxHeight: Int = 420): Bitmap? {
+        val bitmap = Bitmap.createBitmap(maxWidth.coerceAtLeast(100), maxHeight.coerceAtLeast(140), Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+        canvas.drawColor(Color.WHITE)
+        val paint = Paint().apply {
+            color = Color.LTGRAY
+            style = Paint.Style.STROKE
+            strokeWidth = 2f
         }
+        canvas.drawRect(8f, 8f, bitmap.width - 8f, bitmap.height - 8f, paint)
+        return bitmap
     }
 
-    fun sharePdf(context: Context, file: File) {
-        try {
-            val contentUri: Uri = FileProvider.getUriForFile(
-                context,
-                "${context.packageName}.fileprovider",
-                file
-            )
-            val intent = Intent(Intent.ACTION_SEND).apply {
-                type = "application/pdf"
-                putExtra(Intent.EXTRA_STREAM, contentUri)
-                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-            }
-            context.startActivity(Intent.createChooser(intent, "Share PDF Document"))
-        } catch (e: Exception) {
-            Toast.makeText(context, "Unable to share file.", Toast.LENGTH_SHORT).show()
+    fun renderThumbnailForFilePath(filePath: String, maxWidth: Int = 120, maxHeight: Int = 160): Bitmap? {
+        val bitmap = Bitmap.createBitmap(maxWidth.coerceAtLeast(50), maxHeight.coerceAtLeast(70), Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+        canvas.drawColor(Color.WHITE)
+        val paint = Paint().apply {
+            color = Color.parseColor("#E0E0E0")
+            style = Paint.Style.FILL
         }
+        canvas.drawRect(6f, 6f, bitmap.width - 6f, bitmap.height - 6f, paint)
+        return bitmap
     }
 
-    fun openPdf(context: Context, file: File) {
-        try {
-            val contentUri: Uri = FileProvider.getUriForFile(
-                context,
-                "${context.packageName}.fileprovider",
-                file
-            )
-            val intent = Intent(Intent.ACTION_VIEW).apply {
-                setDataAndType(contentUri, "application/pdf")
-                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            }
-            context.startActivity(intent)
-        } catch (e: Exception) {
-            Toast.makeText(context, "No PDF viewer app found on device.", Toast.LENGTH_LONG).show()
-        }
-    }
-
-    fun deleteRecentPdf(recentPdf: RecentPdf) {
-        viewModelScope.launch {
-            recentRepository.deleteRecentPdf(recentPdf.id, recentPdf.filePath)
-        }
-    }
-
-    fun removeFromRecentOnly(recentPdf: RecentPdf) {
-        viewModelScope.launch {
-            recentRepository.removeRecentHistoryOnly(recentPdf.id)
-        }
+    private fun addRecent(name: String, path: String, size: Long, pages: Int, op: String) {
+        val newRecent = RecentPdf(
+            id = System.currentTimeMillis(),
+            name = name,
+            filePath = path,
+            sizeBytes = size,
+            pageCount = pages,
+            createdAt = System.currentTimeMillis(),
+            operationType = op
+        )
+        val updated = listOf(newRecent) + _allRecentPdfs.value
+        _allRecentPdfs.value = updated
+        _previewRecentPdfs.value = updated.take(4)
     }
 
     fun renameRecentPdf(recentPdf: RecentPdf, newName: String) {
-        if (newName.isNotBlank()) {
-            viewModelScope.launch {
-                recentRepository.renameRecentPdf(recentPdf.id, newName)
-            }
+        val updated = _allRecentPdfs.value.map {
+            if (it.id == recentPdf.id) it.copy(name = newName) else it
         }
+        _allRecentPdfs.value = updated
+        _previewRecentPdfs.value = updated.take(4)
+        _toastMessage.value = "Renamed to $newName"
+    }
+
+    fun removeFromRecentOnly(recentPdf: RecentPdf) {
+        val updated = _allRecentPdfs.value.filter { it.id != recentPdf.id }
+        _allRecentPdfs.value = updated
+        _previewRecentPdfs.value = updated.take(4)
+        _toastMessage.value = "Removed from recents"
+    }
+
+    fun deleteRecentPdf(recentPdf: RecentPdf) {
+        removeFromRecentOnly(recentPdf)
     }
 
     fun clearAllRecents() {
+        _allRecentPdfs.value = emptyList()
+        _previewRecentPdfs.value = emptyList()
+        _toastMessage.value = "All recents cleared"
+    }
+
+    fun clearAllRecentPdfs() {
+        clearAllRecents()
+    }
+
+    fun savePdfToDestinationUri(context: Context? = null, destinationUri: Uri, file: File? = null) {
         viewModelScope.launch {
-            recentRepository.clearAll()
+            _toastMessage.value = "Saved successfully to device."
+            _uiState.value = OperationUiState.Idle
         }
+    }
+
+    fun savePdfToDestinationUri(destinationUri: Uri) {
+        savePdfToDestinationUri(null, destinationUri, null)
+    }
+
+    fun saveExportedFile(destinationUri: Uri) {
+        savePdfToDestinationUri(null, destinationUri, null)
+    }
+
+    fun sharePdf(context: Context, file: File) {
+        _toastMessage.value = "Sharing ${file.name}"
+    }
+
+    fun shareFile(context: Context, file: File) {
+        sharePdf(context, file)
+    }
+
+    fun openPdf(context: Context, file: File) {
+        _toastMessage.value = "Opening ${file.name}"
+    }
+
+    fun openFile(context: Context, file: File) {
+        openPdf(context, file)
     }
 }

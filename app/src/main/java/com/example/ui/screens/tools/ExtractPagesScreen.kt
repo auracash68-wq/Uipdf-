@@ -63,6 +63,7 @@ import com.example.ui.components.PrimaryButton
 import com.example.ui.components.ProcessingProgressDialog
 import com.example.ui.components.SuccessResultDialog
 import com.example.ui.components.ToolGuideAndAdSection
+import com.example.ui.components.findActivity
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -81,7 +82,6 @@ fun ExtractPagesScreen(
     var pageInput by remember { mutableStateOf("1") }
     var outputName by remember { mutableStateOf("Extracted_Pages") }
     var errorMessage by remember { mutableStateOf<String?>(null) }
-    var showInternetRequiredDialog by remember { mutableStateOf(false) }
 
     val filePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument()
@@ -246,11 +246,7 @@ fun ExtractPagesScreen(
                                 val pages = ValidationUtils.parsePageRanges(pageInput, 9999)
                                 val uri = selectedUri
                                 if (uri != null) {
-                                    if (!viewModel.isOperationAllowed(context)) {
-                                        showInternetRequiredDialog = true
-                                    } else if (context is Activity) {
-                                        viewModel.extractPages(context, uri, pages, outputName)
-                                    }
+                                    viewModel.extractPages(context.findActivity(), uri, pages, outputName)
                                 }
                             } catch (e: Exception) {
                                 errorMessage = e.message
@@ -281,21 +277,6 @@ fun ExtractPagesScreen(
                 )
             }
         }
-    }
-
-    // Internet Required Warning for Free Mode
-    if (showInternetRequiredDialog) {
-        InternetRequiredDialog(
-            onDismiss = { showInternetRequiredDialog = false },
-            onOpenSettings = {
-                NetworkUtils.openInternetSettings(context)
-                showInternetRequiredDialog = false
-            },
-            onGetPremium = {
-                showInternetRequiredDialog = false
-                onNavigateToPremium()
-            }
-        )
     }
 
     // Dialogs

@@ -82,14 +82,9 @@ fun HomeScreen(
     val context = LocalContext.current
     val entitlement by viewModel.entitlement.collectAsState()
     val previewRecents by viewModel.previewRecentPdfs.collectAsState()
-    var showInternetRequiredDialog by remember { mutableStateOf(false) }
 
     fun handleToolClick(toolRoute: String) {
-        if (!viewModel.isOperationAllowed(context)) {
-            showInternetRequiredDialog = true
-        } else {
-            onNavigateToTool(toolRoute)
-        }
+        onNavigateToTool(toolRoute)
     }
 
     LazyColumn(
@@ -129,21 +124,6 @@ fun HomeScreen(
                 modifier = Modifier.padding(horizontal = 18.dp)
             )
         }
-    }
-
-    // Internet Required Warning for Free Mode
-    if (showInternetRequiredDialog) {
-        InternetRequiredDialog(
-            onDismiss = { showInternetRequiredDialog = false },
-            onOpenSettings = {
-                NetworkUtils.openInternetSettings(context)
-                showInternetRequiredDialog = false
-            },
-            onGetPremium = {
-                showInternetRequiredDialog = false
-                onNavigateToPremium()
-            }
-        )
     }
 }
 

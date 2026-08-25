@@ -47,10 +47,21 @@ data class PdfStatusInfo(
 
 class PdfProcessor(private val context: Context) {
 
+    init {
+        ensurePdfBoxReady()
+    }
+
+    private fun ensurePdfBoxReady() {
+        try {
+            com.tom_roush.pdfbox.android.PDFBoxResourceLoader.init(context.applicationContext)
+        } catch (_: Throwable) {}
+    }
+
     /**
      * Inspect PDF to determine encryption status and page count safely.
      */
     suspend fun inspectPdf(uri: Uri): PdfStatusInfo = withContext(Dispatchers.IO) {
+        ensurePdfBoxReady()
         var tempFile: File? = null
         var doc: PDDocument? = null
         try {

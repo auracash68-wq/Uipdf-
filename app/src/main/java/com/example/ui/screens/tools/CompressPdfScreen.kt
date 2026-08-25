@@ -65,6 +65,7 @@ import com.example.ui.components.PrimaryButton
 import com.example.ui.components.ProcessingProgressDialog
 import com.example.ui.components.SuccessResultDialog
 import com.example.ui.components.ToolGuideAndAdSection
+import com.example.ui.components.findActivity
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -84,7 +85,6 @@ fun CompressPdfScreen(
     var selectedPreset by remember { mutableStateOf(CompressionPreset.BALANCED) }
     var outputName by remember { mutableStateOf("Compressed_Document") }
     var errorMessage by remember { mutableStateOf<String?>(null) }
-    var showInternetRequiredDialog by remember { mutableStateOf(false) }
 
     val filePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument()
@@ -258,11 +258,7 @@ fun CompressPdfScreen(
                         onClick = {
                             val uri = selectedUri
                             if (uri != null) {
-                                if (!viewModel.isOperationAllowed(context)) {
-                                    showInternetRequiredDialog = true
-                                } else if (context is Activity) {
-                                    viewModel.compressPdf(context, uri, selectedPreset, outputName)
-                                }
+                                viewModel.compressPdf(context.findActivity(), uri, selectedPreset, outputName)
                             }
                         },
                         testTag = "compress_action_button"
@@ -290,21 +286,6 @@ fun CompressPdfScreen(
                 )
             }
         }
-    }
-
-    // Internet Required Warning for Free Mode
-    if (showInternetRequiredDialog) {
-        InternetRequiredDialog(
-            onDismiss = { showInternetRequiredDialog = false },
-            onOpenSettings = {
-                NetworkUtils.openInternetSettings(context)
-                showInternetRequiredDialog = false
-            },
-            onGetPremium = {
-                showInternetRequiredDialog = false
-                onNavigateToPremium()
-            }
-        )
     }
 
     // Dialogs
