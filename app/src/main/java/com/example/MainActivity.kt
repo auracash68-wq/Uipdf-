@@ -318,8 +318,8 @@ class MainActivity : ComponentActivity() {
 
                         if (isFirstLaunch) {
                             OnboardingDialog(
-                                onDismiss = {
-                                    viewModel.completeOnboarding()
+                                onComplete = { enableGuideVideos ->
+                                    viewModel.completeOnboarding(enableGuideVideos)
                                 }
                             )
                         }

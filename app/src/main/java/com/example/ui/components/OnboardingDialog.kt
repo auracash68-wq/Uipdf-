@@ -17,14 +17,20 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CloudOff
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.PlayCircleOutline
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Speed
+import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -42,11 +48,123 @@ import com.example.R
 
 @Composable
 fun OnboardingDialog(
-    onDismiss: () -> Unit
+    onComplete: (enableGuideVideos: Boolean) -> Unit
+) {
+    var currentStep by remember { mutableIntStateOf(1) }
+
+    if (currentStep == 1) {
+        // Step 1: Privacy & Offline Setup Flow
+        Dialog(
+            onDismissRequest = {
+                // Safe default on back press: move to step 2 or dismiss safely
+                currentStep = 2
+            },
+            properties = DialogProperties(dismissOnBackPress = true, dismissOnClickOutside = false)
+        ) {
+            Card(
+                shape = RoundedCornerShape(28.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp)
+                    .testTag("onboarding_dialog")
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(22.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(60.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.primaryContainer),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Security,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(32.dp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Text(
+                        text = stringResource(R.string.onboarding_title),
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 18.sp
+                        ),
+                        color = MaterialTheme.colorScheme.onSurface,
+                        textAlign = TextAlign.Center
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Text(
+                        text = stringResource(R.string.onboarding_body),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center,
+                        lineHeight = 18.sp
+                    )
+
+                    Spacer(modifier = Modifier.height(18.dp))
+
+                    OnboardingFeatureItem(
+                        icon = Icons.Default.CloudOff,
+                        title = "100% Offline Processing",
+                        desc = "Your documents and signature never leave this device."
+                    )
+
+                    OnboardingFeatureItem(
+                        icon = Icons.Default.Speed,
+                        title = "Instant & Private",
+                        desc = "No upload/download waiting times. Full local speed."
+                    )
+
+                    OnboardingFeatureItem(
+                        icon = Icons.Default.Lock,
+                        title = "Minimal Permissions",
+                        desc = "Uses Android Storage Access Framework safely."
+                    )
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    PrimaryButton(
+                        text = stringResource(R.string.btn_get_started),
+                        onClick = { currentStep = 2 },
+                        testTag = "get_started_button"
+                    )
+                }
+            }
+        }
+    } else {
+        // Step 2: Guide Video Preference Consent Screen
+        GuideVideoConsentDialog(
+            onConsent = { enabled ->
+                onComplete(enabled)
+            },
+            onDismissBack = {
+                // Safe default on back press: guideVideosEnabled = false
+                onComplete(false)
+            }
+        )
+    }
+}
+
+@Composable
+fun GuideVideoConsentDialog(
+    onConsent: (Boolean) -> Unit,
+    onDismissBack: () -> Unit
 ) {
     Dialog(
-        onDismissRequest = {},
-        properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false)
+        onDismissRequest = onDismissBack,
+        properties = DialogProperties(dismissOnBackPress = true, dismissOnClickOutside = false)
     ) {
         Card(
             shape = RoundedCornerShape(28.dp),
@@ -55,12 +173,12 @@ fun OnboardingDialog(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(8.dp)
-                .testTag("onboarding_dialog")
+                .testTag("guide_video_consent_dialog")
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(22.dp),
+                    .padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Box(
@@ -71,7 +189,7 @@ fun OnboardingDialog(
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Security,
+                        imageVector = Icons.Default.Videocam,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(32.dp)
@@ -81,51 +199,39 @@ fun OnboardingDialog(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Text(
-                    text = stringResource(R.string.onboarding_title),
+                    text = stringResource(R.string.guide_video_preference_title),
                     style = MaterialTheme.typography.titleLarge.copy(
                         fontWeight = FontWeight.Bold,
-                        fontSize = 18.sp
+                        fontSize = 20.sp
                     ),
                     color = MaterialTheme.colorScheme.onSurface,
                     textAlign = TextAlign.Center
                 )
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(10.dp))
 
                 Text(
-                    text = stringResource(R.string.onboarding_body),
-                    style = MaterialTheme.typography.bodySmall,
+                    text = stringResource(R.string.guide_video_preference_desc),
+                    style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
-                    lineHeight = 18.sp
+                    lineHeight = 20.sp
                 )
 
-                Spacer(modifier = Modifier.height(18.dp))
-
-                OnboardingFeatureItem(
-                    icon = Icons.Default.CloudOff,
-                    title = "100% Offline Processing",
-                    desc = "Your documents and signature never leave this device."
-                )
-
-                OnboardingFeatureItem(
-                    icon = Icons.Default.Speed,
-                    title = "Instant & Private",
-                    desc = "No upload/download waiting times. Full local speed."
-                )
-
-                OnboardingFeatureItem(
-                    icon = Icons.Default.Lock,
-                    title = "Minimal Permissions",
-                    desc = "Uses Android Storage Access Framework safely."
-                )
-
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(24.dp))
 
                 PrimaryButton(
-                    text = stringResource(R.string.btn_get_started),
-                    onClick = onDismiss,
-                    testTag = "get_started_button"
+                    text = stringResource(R.string.btn_show_guide_videos),
+                    onClick = { onConsent(true) },
+                    testTag = "btn_show_guide_videos"
+                )
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                SecondaryButton(
+                    text = stringResource(R.string.btn_not_now),
+                    onClick = { onConsent(false) },
+                    testTag = "btn_not_now"
                 )
             }
         }

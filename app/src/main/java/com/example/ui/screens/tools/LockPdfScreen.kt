@@ -62,10 +62,10 @@ import com.example.R
 import com.example.engine.FileUtils
 import com.example.ui.OperationUiState
 import com.example.ui.PdfViewModel
-import com.example.ui.components.AdBannerContainer
 import com.example.ui.components.PrimaryButton
 import com.example.ui.components.ProcessingProgressDialog
 import com.example.ui.components.SuccessResultDialog
+import com.example.ui.components.ToolGuideAndAdSection
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -76,6 +76,7 @@ fun LockPdfScreen(
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState()
     val entitlement by viewModel.entitlement.collectAsState()
+    val guideVideosEnabled by viewModel.guideVideosEnabled.collectAsState()
 
     var selectedUri by remember { mutableStateOf<Uri?>(null) }
     var selectedFileName by remember { mutableStateOf("") }
@@ -203,7 +204,7 @@ fun LockPdfScreen(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(14.dp))
             }
 
             if (selectedUri != null) {
@@ -295,9 +296,13 @@ fun LockPdfScreen(
                 }
             }
 
+            // Video Guide & Large Ad Section (Bottom UX Priority)
             item {
-                Spacer(modifier = Modifier.height(24.dp))
-                AdBannerContainer(entitlement = entitlement)
+                ToolGuideAndAdSection(
+                    toolKey = "lock",
+                    entitlement = entitlement,
+                    guideVideosEnabled = guideVideosEnabled
+                )
             }
         }
     }

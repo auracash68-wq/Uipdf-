@@ -223,7 +223,7 @@ fun PremiumScreen(
                             )
                             Spacer(modifier = Modifier.width(12.dp))
                             Text(
-                                text = "Thank you for supporting Universal PDF!",
+                                text = "Thank you for supporting PDF Suite!",
                                 style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
                                 color = Color(0xFF166534)
                             )

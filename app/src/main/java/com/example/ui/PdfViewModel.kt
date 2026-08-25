@@ -62,6 +62,8 @@ class PdfViewModel(application: Application) : AndroidViewModel(application) {
     val entitlement: StateFlow<UserEntitlement> = billingManager.entitlement
     val themeMode: StateFlow<AppThemeMode> = settingsRepository.themeMode
     val isFirstLaunch: StateFlow<Boolean> = settingsRepository.isFirstLaunch
+    val guideVideosEnabled: StateFlow<Boolean> = settingsRepository.guideVideosEnabled
+    val isGuideVideoPreferenceAsked: StateFlow<Boolean> = settingsRepository.isGuideVideoPreferenceAsked
 
     val allRecentPdfs: StateFlow<List<RecentPdf>> = recentRepository.allRecentPdfs
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
@@ -86,8 +88,12 @@ class PdfViewModel(application: Application) : AndroidViewModel(application) {
         _toastMessage.value = null
     }
 
-    fun completeOnboarding() {
-        settingsRepository.completeFirstLaunch()
+    fun setGuideVideosEnabled(enabled: Boolean) {
+        settingsRepository.setGuideVideosEnabled(enabled)
+    }
+
+    fun completeOnboarding(enableGuideVideos: Boolean? = null) {
+        settingsRepository.completeFirstLaunch(enableGuideVideos)
     }
 
     fun setTheme(mode: AppThemeMode) {
@@ -200,6 +206,10 @@ class PdfViewModel(application: Application) : AndroidViewModel(application) {
 
     suspend fun renderThumbnail(uri: Uri, pageIndex: Int, maxWidth: Int = 400): Bitmap? {
         return pdfProcessor.renderPageThumbnail(uri, pageIndex, maxWidth)
+    }
+
+    suspend fun renderThumbnailForFilePath(filePath: String, maxWidth: Int = 200): Bitmap? {
+        return pdfProcessor.renderThumbnailForFilePath(filePath, 0, maxWidth)
     }
 
     fun signPdf(
@@ -324,6 +334,12 @@ class PdfViewModel(application: Application) : AndroidViewModel(application) {
     fun deleteRecentPdf(recentPdf: RecentPdf) {
         viewModelScope.launch {
             recentRepository.deleteRecentPdf(recentPdf.id, recentPdf.filePath)
+        }
+    }
+
+    fun removeFromRecentOnly(recentPdf: RecentPdf) {
+        viewModelScope.launch {
+            recentRepository.removeRecentHistoryOnly(recentPdf.id)
         }
     }
 

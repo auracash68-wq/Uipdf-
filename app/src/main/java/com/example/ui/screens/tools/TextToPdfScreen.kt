@@ -49,10 +49,10 @@ import com.example.R
 import com.example.engine.FileUtils
 import com.example.ui.OperationUiState
 import com.example.ui.PdfViewModel
-import com.example.ui.components.AdBannerContainer
 import com.example.ui.components.PrimaryButton
 import com.example.ui.components.ProcessingProgressDialog
 import com.example.ui.components.SuccessResultDialog
+import com.example.ui.components.ToolGuideAndAdSection
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -63,6 +63,7 @@ fun TextToPdfScreen(
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState()
     val entitlement by viewModel.entitlement.collectAsState()
+    val guideVideosEnabled by viewModel.guideVideosEnabled.collectAsState()
 
     var titleText by remember { mutableStateOf("") }
     var bodyText by remember { mutableStateOf("") }
@@ -201,9 +202,13 @@ fun TextToPdfScreen(
                 }
             }
 
+            // Video Guide & Large Ad Section (Bottom UX Priority)
             item {
-                Spacer(modifier = Modifier.height(24.dp))
-                AdBannerContainer(entitlement = entitlement)
+                ToolGuideAndAdSection(
+                    toolKey = "text_to_pdf",
+                    entitlement = entitlement,
+                    guideVideosEnabled = guideVideosEnabled
+                )
             }
         }
     }

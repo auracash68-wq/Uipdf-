@@ -20,6 +20,8 @@ class AdManager(
     companion object {
         // Standard Google Mobile Ads test IDs for development
         const val BANNER_TEST_ID = "ca-app-pub-3940256099942544/6300978111"
+        const val NATIVE_TEST_ID = "ca-app-pub-3940256099942544/2247696110"
+        const val MEDIUM_RECTANGLE_TEST_ID = "ca-app-pub-3940256099942544/6300978111"
         const val INTERSTITIAL_TEST_ID = "ca-app-pub-3940256099942544/1033173712"
         const val REWARDED_TEST_ID = "ca-app-pub-3940256099942544/5224354917"
 

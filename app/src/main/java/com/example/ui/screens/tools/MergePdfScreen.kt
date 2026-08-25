@@ -64,11 +64,11 @@ import com.example.engine.FileUtils
 import com.example.model.SelectedFileItem
 import com.example.ui.OperationUiState
 import com.example.ui.PdfViewModel
-import com.example.ui.components.AdBannerContainer
 import com.example.ui.components.PrimaryButton
 import com.example.ui.components.ProcessingProgressDialog
 import com.example.ui.components.SecondaryButton
 import com.example.ui.components.SuccessResultDialog
+import com.example.ui.components.ToolGuideAndAdSection
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -79,6 +79,7 @@ fun MergePdfScreen(
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState()
     val entitlement by viewModel.entitlement.collectAsState()
+    val guideVideosEnabled by viewModel.guideVideosEnabled.collectAsState()
 
     val selectedFiles = remember { mutableStateListOf<SelectedFileItem>() }
     var outputFileName by remember { mutableStateOf("Merged_Document") }
@@ -154,7 +155,7 @@ fun MergePdfScreen(
                         fontWeight = FontWeight.SemiBold
                     )
                 }
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(14.dp))
             }
 
             // File items
@@ -306,9 +307,13 @@ fun MergePdfScreen(
                 }
             }
 
+            // Video Guide & Large Ad Section (Bottom UX Priority)
             item {
-                Spacer(modifier = Modifier.height(20.dp))
-                AdBannerContainer(entitlement = entitlement)
+                ToolGuideAndAdSection(
+                    toolKey = "merge",
+                    entitlement = entitlement,
+                    guideVideosEnabled = guideVideosEnabled
+                )
             }
         }
     }

@@ -93,13 +93,13 @@ import com.example.R
 import com.example.engine.FileUtils
 import com.example.ui.OperationUiState
 import com.example.ui.PdfViewModel
-import com.example.ui.components.AdBannerContainer
 import com.example.ui.components.DrawingPath
 import com.example.ui.components.PrimaryButton
 import com.example.ui.components.ProcessingProgressDialog
 import com.example.ui.components.SecondaryButton
 import com.example.ui.components.SignaturePad
 import com.example.ui.components.SuccessResultDialog
+import com.example.ui.components.ToolGuideAndAdSection
 import com.example.ui.components.exportSignatureToBitmap
 import com.example.ui.components.processImportedSignature
 import kotlinx.coroutines.launch
@@ -120,6 +120,7 @@ fun SignPdfScreen(
     val coroutineScope = rememberCoroutineScope()
     val uiState by viewModel.uiState.collectAsState()
     val entitlement by viewModel.entitlement.collectAsState()
+    val guideVideosEnabled by viewModel.guideVideosEnabled.collectAsState()
 
     var selectedUri by remember { mutableStateOf<Uri?>(null) }
     var selectedFileName by remember { mutableStateOf("") }
@@ -308,7 +309,7 @@ fun SignPdfScreen(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(14.dp))
             }
 
             if (selectedUri != null) {
@@ -770,9 +771,13 @@ fun SignPdfScreen(
                 }
             }
 
+            // Video Guide & Large Ad Section (Bottom UX Priority)
             item {
-                Spacer(modifier = Modifier.height(24.dp))
-                AdBannerContainer(entitlement = entitlement)
+                ToolGuideAndAdSection(
+                    toolKey = "sign",
+                    entitlement = entitlement,
+                    guideVideosEnabled = guideVideosEnabled
+                )
             }
         }
     }

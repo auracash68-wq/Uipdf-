@@ -36,6 +36,10 @@ class RecentPdfRepository(private val pdfDao: PdfDao) {
         pdfDao.deleteById(id)
     }
 
+    suspend fun removeRecentHistoryOnly(id: Long) {
+        pdfDao.deleteById(id)
+    }
+
     suspend fun renameRecentPdf(id: Long, newName: String) {
         pdfDao.updateName(id, newName)
     }

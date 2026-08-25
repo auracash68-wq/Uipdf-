@@ -879,6 +879,33 @@ class PdfProcessor(private val context: Context) {
         }
     }
 
+    /**
+     * Render a memory-efficient page thumbnail directly from a local file path.
+     */
+    suspend fun renderThumbnailForFilePath(filePath: String, pageIndex: Int = 0, maxWidth: Int = 200): Bitmap? = withContext(Dispatchers.IO) {
+        try {
+            val file = File(filePath)
+            if (!file.exists() || !file.isFile || file.length() <= 0) return@withContext null
+            ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY).use { pfd ->
+                PdfRenderer(pfd).use { renderer ->
+                    if (pageIndex in 0 until renderer.pageCount) {
+                        val page = renderer.openPage(pageIndex)
+                        val scale = maxWidth.toFloat() / page.width.toFloat()
+                        val w = (page.width * scale).toInt().coerceAtLeast(40)
+                        val h = (page.height * scale).toInt().coerceAtLeast(40)
+                        val bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+                        page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
+                        page.close()
+                        return@withContext bitmap
+                    }
+                }
+            }
+            null
+        } catch (_: Exception) {
+            null
+        }
+    }
+
     private fun decodeBitmapFromUri(uri: Uri, maxDimension: Int): Bitmap? {
         return try {
             // First decode bounds

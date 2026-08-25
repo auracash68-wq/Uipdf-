@@ -26,11 +26,13 @@ import androidx.compose.material.icons.filled.Policy
 import androidx.compose.material.icons.filled.Restore
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Shield
+import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -65,6 +67,7 @@ fun SettingsScreen(
 ) {
     val themeMode by viewModel.themeMode.collectAsState()
     val entitlement by viewModel.entitlement.collectAsState()
+    val guideVideosEnabled by viewModel.guideVideosEnabled.collectAsState()
 
     var showPrivacyDialog by remember { mutableStateOf(false) }
     var showTermsDialog by remember { mutableStateOf(false) }
@@ -95,6 +98,28 @@ fun SettingsScreen(
                     text = "Preferences & Privacy Control",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+
+        // Section: Preferences & Guides
+        item {
+            SectionHeader(title = "PREFERENCES")
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 18.dp, vertical = 4.dp),
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+            ) {
+                SettingSwitchRow(
+                    icon = Icons.Default.Videocam,
+                    iconTint = MaterialTheme.colorScheme.primary,
+                    title = stringResource(R.string.settings_guide_videos_title),
+                    subtitle = stringResource(R.string.settings_guide_videos_desc),
+                    checked = guideVideosEnabled,
+                    onCheckedChange = { viewModel.setGuideVideosEnabled(it) },
+                    testTag = "switch_guide_videos"
                 )
             }
         }
@@ -263,7 +288,7 @@ fun SettingsScreen(
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(
-                        text = "Universal PDF Utility is strictly designed with privacy-first architecture:\n\n" +
+                        text = "PDF Suite is strictly designed with privacy-first architecture:\n\n" +
                                 "• 100% Local Processing: All PDF operations (merging, splitting, encryption, signatures) occur locally inside the device sandbox.\n" +
                                 "• Zero Cloud Uploads: Documents and images are never uploaded to any remote server or AI service.\n" +
                                 "• Minimal Permissions: The app uses Android Storage Access Framework (SAF) without requesting broad filesystem storage permissions.",
@@ -293,7 +318,7 @@ fun SettingsScreen(
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(
-                        text = "Universal PDF Utility is provided as a utility tool for managing PDF files.\n\n" +
+                        text = "PDF Suite is provided as a utility tool for managing PDF files.\n\n" +
                                 "• Free users can access all tools supported by Google AdMob advertisements.\n" +
                                 "• A one-time purchase of ₹29 grants permanent ad-free access on your Google Play account.\n" +
                                 "• You retain full ownership and copyright of all documents created or modified with this utility.",
@@ -373,6 +398,63 @@ private fun SettingRow(
             contentDescription = null,
             tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
             modifier = Modifier.size(18.dp)
+        )
+    }
+}
+
+@Composable
+private fun SettingSwitchRow(
+    icon: ImageVector,
+    iconTint: Color,
+    title: String,
+    subtitle: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    testTag: String = ""
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onCheckedChange(!checked) }
+            .padding(horizontal = 16.dp, vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier
+                .size(36.dp)
+                .clip(RoundedCornerShape(10.dp))
+                .background(iconTint.copy(alpha = 0.12f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = iconTint,
+                modifier = Modifier.size(20.dp)
+            )
+        }
+
+        Spacer(modifier = Modifier.width(14.dp))
+
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Text(
+                text = subtitle,
+                style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+
+        Spacer(modifier = Modifier.width(8.dp))
+
+        Switch(
+            checked = checked,
+            onCheckedChange = onCheckedChange,
+            modifier = if (testTag.isNotEmpty()) Modifier.testTag(testTag) else Modifier
         )
     }
 }

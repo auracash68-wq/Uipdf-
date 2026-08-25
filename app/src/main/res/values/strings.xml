@@ -1,6 +1,6 @@
 <resources>
-    <string name="app_name">Universal PDF Utility</string>
-    <string name="app_full_name">Universal PDF Utility</string>
+    <string name="app_name">PDF Suite</string>
+    <string name="app_full_name">PDF Suite</string>
     <string name="app_tagline">Private PDF tools. Process locally.</string>
     
     <!-- Config IDs -->
@@ -168,9 +168,9 @@
     <string name="status_offline">You are offline. PDF tools work completely offline.</string>
 
     <!-- Empty States -->
-    <string name="empty_recent_title">No recent PDF files yet</string>
-    <string name="empty_recent_desc">Processed documents will appear here for easy access.</string>
-    <string name="btn_create_first_pdf">Process your first PDF</string>
+    <string name="empty_recent_title">No Recent Files</string>
+    <string name="empty_recent_desc">Files you create will appear here.</string>
+    <string name="btn_create_first_pdf">Create PDF</string>
 
     <!-- Error Messages -->
     <string name="error_generic">An error occurred during PDF processing.</string>
@@ -192,15 +192,38 @@
     <string name="settings_privacy">Privacy &amp; Security</string>
     <string name="privacy_summary">100% On-Device Processing. No documents are ever uploaded to cloud servers.</string>
     <string name="settings_monetization">Monetization</string>
-    <string name="settings_about">About Universal PDF</string>
+    <string name="settings_about">About PDF Suite</string>
     <string name="app_version">Version 1.0.0 (Production Build)</string>
     <string name="privacy_policy_title">Privacy Policy</string>
     <string name="terms_title">Terms of Service</string>
 
     <!-- First Launch Onboarding -->
     <string name="onboarding_title">Your files stay on your device.</string>
-    <string name="onboarding_body">Universal PDF Utility operates 100% locally. Your documents, photos, text, and signatures are never uploaded to any remote server.</string>
+    <string name="onboarding_body">PDF Suite operates 100% locally. Your documents, photos, text, and signatures are never uploaded to any remote server.</string>
     <string name="onboarding_point_1">Zero cloud document upload</string>
     <string name="onboarding_point_2">Fast offline processing</string>
     <string name="onboarding_point_3">Free with ads or ₹29 lifetime ad-free</string>
+    <!-- Video Guide Preference & Settings -->
+    <string name="guide_video_preference_title">Guide Videos</string>
+    <string name="guide_video_preference_desc">Would you like to see short guide videos inside PDF tools?\n\nYou can change this anytime in Settings.</string>
+    <string name="btn_show_guide_videos">Show Guide Videos</string>
+    <string name="btn_not_now">Not Now</string>
+    <string name="settings_guide_videos_title">Guide Videos</string>
+    <string name="settings_guide_videos_desc">Show optional guide videos inside PDF tools.</string>
+
+    <!-- Video Guide -->
+    <string name="video_guide_label">VIDEO GUIDE</string>
+    <string name="video_guide_title">Quick Video Tutorial</string>
+    <string name="video_guide_subtitle">Learn how to use this tool in seconds</string>
+    <string name="video_guide_unavailable">Video guide unavailable</string>
+    <string name="video_guide_offline_hint">Connect to the internet to load the video tutorial or watch on YouTube.</string>
+    <string name="btn_watch_youtube">Watch on YouTube</string>
+    
+    <!-- Recent Item Actions -->
+    <string name="action_open">Open</string>
+    <string name="action_share">Share</string>
+    <string name="action_rename">Rename</string>
+    <string name="action_file_info">File Details</string>
+    <string name="action_remove_history">Remove from Recent</string>
+    <string name="action_delete_file">Delete File from Device</string>
 </resources>
