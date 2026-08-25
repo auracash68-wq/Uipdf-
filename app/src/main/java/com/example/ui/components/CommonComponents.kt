@@ -199,10 +199,14 @@ fun AdBannerContainer(
         AndroidView(
             modifier = Modifier.fillMaxWidth(),
             factory = { context ->
-                AdView(context).apply {
-                    setAdSize(AdSize.BANNER)
-                    adUnitId = AdManager.BANNER_TEST_ID
-                    loadAd(AdRequest.Builder().build())
+                try {
+                    AdView(context).apply {
+                        setAdSize(AdSize.BANNER)
+                        adUnitId = AdManager.BANNER_TEST_ID
+                        loadAd(AdRequest.Builder().build())
+                    }
+                } catch (_: Throwable) {
+                    android.view.View(context)
                 }
             }
         )

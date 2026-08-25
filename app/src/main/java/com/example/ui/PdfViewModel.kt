@@ -17,6 +17,7 @@ import com.example.data.AppThemeMode
 import com.example.data.BillingManager
 import com.example.data.RecentPdfRepository
 import com.example.data.SettingsRepository
+import com.example.data.db.AppDatabase
 import com.example.engine.FileUtils
 import com.example.engine.NetworkUtils
 import com.example.engine.PdfProcessor
@@ -53,12 +54,17 @@ sealed class OperationUiState {
 
 class PdfViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val app = application as PdfApplication
-    val recentRepository: RecentPdfRepository = app.recentPdfRepository
-    val billingManager: BillingManager = app.billingManager
-    val adManager: AdManager = app.adManager
-    val settingsRepository: SettingsRepository = app.settingsRepository
-    val pdfProcessor: PdfProcessor = app.pdfProcessor
+    private val app = application as? PdfApplication
+    val recentRepository: RecentPdfRepository = runCatching { app?.recentPdfRepository }.getOrNull()
+        ?: RecentPdfRepository(AppDatabase.getDatabase(application).pdfDao())
+    val billingManager: BillingManager = runCatching { app?.billingManager }.getOrNull()
+        ?: BillingManager(application)
+    val adManager: AdManager = runCatching { app?.adManager }.getOrNull()
+        ?: AdManager(application, billingManager)
+    val settingsRepository: SettingsRepository = runCatching { app?.settingsRepository }.getOrNull()
+        ?: SettingsRepository(application)
+    val pdfProcessor: PdfProcessor = runCatching { app?.pdfProcessor }.getOrNull()
+        ?: PdfProcessor(application)
 
     val entitlement: StateFlow<UserEntitlement> = billingManager.entitlement
     val themeMode: StateFlow<AppThemeMode> = settingsRepository.themeMode

@@ -286,46 +286,51 @@ private fun YouTubePlayerWebView(
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         AndroidView(
             factory = { ctx ->
-                WebView(ctx).apply {
-                    webViewRef = this
-                    layoutParams = ViewGroup.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.MATCH_PARENT
-                    )
-                    settings.apply {
-                        javaScriptEnabled = true
-                        domStorageEnabled = true
-                        mediaPlaybackRequiresUserGesture = false
-                        cacheMode = WebSettings.LOAD_DEFAULT
-                        loadWithOverviewMode = true
-                        useWideViewPort = true
-                    }
-                    webChromeClient = WebChromeClient()
-                    webViewClient = object : WebViewClient() {
-                        override fun onPageFinished(view: WebView?, url: String?) {
-                            super.onPageFinished(view, url)
-                            isPlayerLoading = false
+                try {
+                    WebView(ctx).apply {
+                        webViewRef = this
+                        layoutParams = ViewGroup.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.MATCH_PARENT
+                        )
+                        settings.apply {
+                            javaScriptEnabled = true
+                            domStorageEnabled = true
+                            mediaPlaybackRequiresUserGesture = false
+                            cacheMode = WebSettings.LOAD_DEFAULT
+                            loadWithOverviewMode = true
+                            useWideViewPort = true
                         }
-
-                        override fun onReceivedError(
-                            view: WebView?,
-                            request: WebResourceRequest?,
-                            error: WebResourceError?
-                        ) {
-                            super.onReceivedError(view, request, error)
-                            if (request?.isForMainFrame == true) {
+                        webChromeClient = WebChromeClient()
+                        webViewClient = object : WebViewClient() {
+                            override fun onPageFinished(view: WebView?, url: String?) {
+                                super.onPageFinished(view, url)
                                 isPlayerLoading = false
-                                onError()
+                            }
+
+                            override fun onReceivedError(
+                                view: WebView?,
+                                request: WebResourceRequest?,
+                                error: WebResourceError?
+                            ) {
+                                super.onReceivedError(view, request, error)
+                                if (request?.isForMainFrame == true) {
+                                    isPlayerLoading = false
+                                    onError()
+                                }
                             }
                         }
-                    }
 
-                    val html = getYouTubeEmbedHtml(videoId)
-                    loadDataWithBaseURL("https://www.youtube.com", html, "text/html", "UTF-8", null)
+                        val html = getYouTubeEmbedHtml(videoId)
+                        loadDataWithBaseURL("https://www.youtube.com", html, "text/html", "UTF-8", null)
+                    }
+                } catch (_: Throwable) {
+                    onError()
+                    android.view.View(ctx)
                 }
             },
             update = {
-                webViewRef = it
+                webViewRef = it as? WebView
             },
             modifier = Modifier.fillMaxSize()
         )
@@ -524,28 +529,33 @@ fun AdMobLargeCard(
                 AndroidView(
                     modifier = Modifier.size(width = 300.dp, height = 250.dp),
                     factory = { ctx ->
-                        AdView(ctx).apply {
-                            adViewRef = this
-                            setAdSize(AdSize.MEDIUM_RECTANGLE)
-                            adUnitId = AdManager.MEDIUM_RECTANGLE_TEST_ID
-                            adListener = object : AdListener() {
-                                override fun onAdLoaded() {
-                                    super.onAdLoaded()
-                                    isAdLoaded = true
-                                    hasAdFailed = false
-                                }
+                        try {
+                            AdView(ctx).apply {
+                                adViewRef = this
+                                setAdSize(AdSize.MEDIUM_RECTANGLE)
+                                adUnitId = AdManager.MEDIUM_RECTANGLE_TEST_ID
+                                adListener = object : AdListener() {
+                                    override fun onAdLoaded() {
+                                        super.onAdLoaded()
+                                        isAdLoaded = true
+                                        hasAdFailed = false
+                                    }
 
-                                override fun onAdFailedToLoad(error: LoadAdError) {
-                                    super.onAdFailedToLoad(error)
-                                    isAdLoaded = false
-                                    hasAdFailed = true
+                                    override fun onAdFailedToLoad(error: LoadAdError) {
+                                        super.onAdFailedToLoad(error)
+                                        isAdLoaded = false
+                                        hasAdFailed = true
+                                    }
                                 }
+                                loadAd(AdRequest.Builder().build())
                             }
-                            loadAd(AdRequest.Builder().build())
+                        } catch (_: Throwable) {
+                            hasAdFailed = true
+                            android.view.View(ctx)
                         }
                     },
                     update = {
-                        adViewRef = it
+                        adViewRef = it as? AdView
                     }
                 )
             }

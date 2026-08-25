@@ -27,18 +27,33 @@ class PdfApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        
+        try {
+            // Initialize Room DB & Repositories
+            database = AppDatabase.getDatabase(this)
+            recentPdfRepository = RecentPdfRepository(database.pdfDao())
+        } catch (_: Exception) {}
+
+        try {
+            billingManager = BillingManager(this)
+        } catch (_: Exception) {}
+
+        try {
+            adManager = AdManager(this, billingManager)
+        } catch (_: Exception) {}
+
+        try {
+            settingsRepository = SettingsRepository(this)
+        } catch (_: Exception) {}
+
+        try {
+            pdfProcessor = PdfProcessor(this)
+        } catch (_: Exception) {}
+
         try {
             // Initialize PDFBox for Android
             PDFBoxResourceLoader.init(applicationContext)
         } catch (_: Exception) {}
-
-        // Initialize Room DB & Repositories
-        database = AppDatabase.getDatabase(this)
-        recentPdfRepository = RecentPdfRepository(database.pdfDao())
-        billingManager = BillingManager(this)
-        adManager = AdManager(this, billingManager)
-        settingsRepository = SettingsRepository(this)
-        pdfProcessor = PdfProcessor(this)
 
         try {
             // Clean up any stale temporary processing files from prior sessions

@@ -189,7 +189,7 @@ class MainActivity : ComponentActivity() {
                                         navController.navigate(toolRoute)
                                     },
                                     onNavigateToPremium = {
-                                        navController.navigate("premium_paywall")
+                                        navController.navigate("premium")
                                     }
                                 )
                             }
@@ -202,7 +202,7 @@ class MainActivity : ComponentActivity() {
                                         navController.navigate(toolRoute)
                                     },
                                     onNavigateToPremium = {
-                                        navController.navigate("premium_paywall")
+                                        navController.navigate("premium")
                                     }
                                 )
                             }
@@ -214,7 +214,7 @@ class MainActivity : ComponentActivity() {
                                         navController.navigate(toolRoute)
                                     },
                                     onNavigateToPremium = {
-                                        navController.navigate("premium_paywall")
+                                        navController.navigate("premium")
                                     }
                                 )
                             }
@@ -226,7 +226,7 @@ class MainActivity : ComponentActivity() {
                                         navController.navigate(toolRoute)
                                     },
                                     onNavigateToPremium = {
-                                        navController.navigate("premium_paywall")
+                                        navController.navigate("premium")
                                     }
                                 )
                             }
@@ -331,6 +331,13 @@ class MainActivity : ComponentActivity() {
                             }
 
                             composable("premium") {
+                                PremiumScreen(
+                                    viewModel = viewModel,
+                                    onBack = { navController.popBackStack() }
+                                )
+                            }
+
+                            composable("premium_paywall") {
                                 PremiumScreen(
                                     viewModel = viewModel,
                                     onBack = { navController.popBackStack() }

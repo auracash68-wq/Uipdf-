@@ -31,7 +31,12 @@ class SettingsRepository(context: Context) {
     private val prefs: SharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
     private val _themeMode = MutableStateFlow(
-        AppThemeMode.valueOf(prefs.getString(KEY_THEME, AppThemeMode.SYSTEM.name) ?: AppThemeMode.SYSTEM.name)
+        try {
+            val savedTheme = prefs.getString(KEY_THEME, AppThemeMode.SYSTEM.name) ?: AppThemeMode.SYSTEM.name
+            AppThemeMode.valueOf(savedTheme)
+        } catch (_: Exception) {
+            AppThemeMode.SYSTEM
+        }
     )
     val themeMode: StateFlow<AppThemeMode> = _themeMode.asStateFlow()
 
