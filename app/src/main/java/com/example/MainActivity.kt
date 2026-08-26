@@ -84,6 +84,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val themeMode by viewModel.themeMode.collectAsState()
+            val colorTheme by viewModel.colorTheme.collectAsState()
             val isFirstLaunch by viewModel.isFirstLaunch.collectAsState()
 
             val isDarkTheme = when (themeMode) {
@@ -92,7 +93,10 @@ class MainActivity : ComponentActivity() {
                 AppThemeMode.DARK -> true
             }
 
-            UniversalPdfTheme(darkTheme = isDarkTheme) {
+            UniversalPdfTheme(
+                darkTheme = isDarkTheme,
+                colorTheme = colorTheme
+            ) {
                 val navController = rememberNavController()
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = navBackStackEntry?.destination?.route

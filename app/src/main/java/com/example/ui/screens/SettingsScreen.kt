@@ -2,6 +2,7 @@ package com.example.ui.screens
 
 import android.content.Context
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,12 +17,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.MonetizationOn
+import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Policy
 import androidx.compose.material.icons.filled.Restore
 import androidx.compose.material.icons.filled.Security
@@ -29,6 +34,7 @@ import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
@@ -58,7 +64,9 @@ import com.example.ui.PdfViewModel
 import com.example.ui.components.AdBannerContainer
 import com.example.ui.components.PrimaryButton
 import com.example.ui.components.SecondaryButton
+import com.example.ui.theme.AppColorTheme
 import com.example.ui.theme.PremiumGold
+import com.example.ui.theme.ThemeCategory
 
 @Composable
 fun SettingsScreen(
@@ -66,11 +74,13 @@ fun SettingsScreen(
     onNavigateToPremium: () -> Unit
 ) {
     val themeMode by viewModel.themeMode.collectAsState()
+    val colorTheme by viewModel.colorTheme.collectAsState()
     val entitlement by viewModel.entitlement.collectAsState()
 
     var showPrivacyDialog by remember { mutableStateOf(false) }
     var showTermsDialog by remember { mutableStateOf(false) }
     var showThemeDialog by remember { mutableStateOf(false) }
+    var showColorThemeDialog by remember { mutableStateOf(false) }
 
     LazyColumn(
         modifier = Modifier
@@ -114,13 +124,38 @@ fun SettingsScreen(
                 SettingRow(
                     icon = Icons.Default.DarkMode,
                     iconTint = MaterialTheme.colorScheme.primary,
-                    title = "Theme",
+                    title = "Light / Dark Mode",
                     subtitle = when (themeMode) {
                         AppThemeMode.SYSTEM -> stringResource(R.string.theme_system)
                         AppThemeMode.LIGHT -> stringResource(R.string.theme_light)
                         AppThemeMode.DARK -> stringResource(R.string.theme_dark)
                     },
                     onClick = { showThemeDialog = true }
+                )
+
+                SettingRow(
+                    icon = Icons.Default.Palette,
+                    iconTint = MaterialTheme.colorScheme.primary,
+                    title = "Color Theme",
+                    subtitle = colorTheme.displayName,
+                    trailingContent = {
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy((-4).dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(end = 6.dp)
+                        ) {
+                            colorTheme.previewColors.forEach { color ->
+                                Box(
+                                    modifier = Modifier
+                                        .size(16.dp)
+                                        .clip(CircleShape)
+                                        .background(color)
+                                        .border(1.dp, MaterialTheme.colorScheme.surface, CircleShape)
+                                )
+                            }
+                        }
+                    },
+                    onClick = { showColorThemeDialog = true }
                 )
             }
         }
@@ -219,7 +254,7 @@ fun SettingsScreen(
             ) {
                 Column(modifier = Modifier.padding(20.dp)) {
                     Text(
-                        text = "Select Theme",
+                        text = "Select Mode",
                         style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                         color = MaterialTheme.colorScheme.onSurface
                     )
@@ -240,6 +275,16 @@ fun SettingsScreen(
                 }
             }
         }
+    }
+
+    if (showColorThemeDialog) {
+        ColorThemeDialog(
+            currentTheme = colorTheme,
+            onThemeSelect = { selectedTheme ->
+                viewModel.setColorTheme(selectedTheme)
+            },
+            onDismiss = { showColorThemeDialog = false }
+        )
     }
 
     if (showPrivacyDialog) {
@@ -305,6 +350,198 @@ fun SettingsScreen(
 }
 
 @Composable
+private fun ColorThemeDialog(
+    currentTheme: AppColorTheme,
+    onThemeSelect: (AppColorTheme) -> Unit,
+    onDismiss: () -> Unit
+) {
+    var selectedCategoryTab by remember { mutableStateOf<ThemeCategory?>(null) }
+
+    val filteredThemes = remember(selectedCategoryTab) {
+        if (selectedCategoryTab == null) {
+            AppColorTheme.entries
+        } else {
+            AppColorTheme.entries.filter { it.category == selectedCategoryTab }
+        }
+    }
+
+    Dialog(onDismissRequest = onDismiss) {
+        Card(
+            shape = RoundedCornerShape(24.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 12.dp),
+            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(20.dp)
+            ) {
+                Text(
+                    text = "Color Theme",
+                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = "Choose a coordinated visual palette",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Category Filter Chips
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    FilterChip(
+                        selected = selectedCategoryTab == null,
+                        onClick = { selectedCategoryTab = null },
+                        label = { Text("All (${AppColorTheme.entries.size})", fontSize = 11.sp) }
+                    )
+                    FilterChip(
+                        selected = selectedCategoryTab == ThemeCategory.SINGLE_COLOR,
+                        onClick = { selectedCategoryTab = ThemeCategory.SINGLE_COLOR },
+                        label = { Text("Single", fontSize = 11.sp) }
+                    )
+                    FilterChip(
+                        selected = selectedCategoryTab == ThemeCategory.MULTI_COLOR,
+                        onClick = { selectedCategoryTab = ThemeCategory.MULTI_COLOR },
+                        label = { Text("Combos", fontSize = 11.sp) }
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                // Theme Items List
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(340.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(filteredThemes) { theme ->
+                        val isSelected = theme == currentTheme
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(14.dp))
+                                .clickable {
+                                    onThemeSelect(theme)
+                                }
+                                .then(
+                                    if (isSelected) {
+                                        Modifier.border(
+                                            width = 2.dp,
+                                            color = MaterialTheme.colorScheme.primary,
+                                            shape = RoundedCornerShape(14.dp)
+                                        )
+                                    } else {
+                                        Modifier.border(
+                                            width = 1.dp,
+                                            color = MaterialTheme.colorScheme.outline.copy(alpha = 0.35f),
+                                            shape = RoundedCornerShape(14.dp)
+                                        )
+                                    }
+                                ),
+                            colors = CardDefaults.cardColors(
+                                containerColor = if (isSelected) {
+                                    MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f)
+                                } else {
+                                    MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f)
+                                }
+                            ),
+                            shape = RoundedCornerShape(14.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 14.dp, vertical = 10.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                // Left: Swatches and Name
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    // 3 Swatch Dots
+                                    Row(
+                                        horizontalArrangement = Arrangement.spacedBy((-5).dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        theme.previewColors.forEach { color ->
+                                            Box(
+                                                modifier = Modifier
+                                                    .size(20.dp)
+                                                    .clip(CircleShape)
+                                                    .background(color)
+                                                    .border(
+                                                        1.5.dp,
+                                                        MaterialTheme.colorScheme.surface,
+                                                        CircleShape
+                                                    )
+                                            )
+                                        }
+                                    }
+
+                                    Spacer(modifier = Modifier.width(12.dp))
+
+                                    Column {
+                                        Text(
+                                            text = theme.displayName,
+                                            style = MaterialTheme.typography.bodyMedium.copy(
+                                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
+                                            ),
+                                            color = MaterialTheme.colorScheme.onSurface
+                                        )
+                                        Text(
+                                            text = theme.category.title,
+                                            style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                }
+
+                                if (isSelected) {
+                                    Icon(
+                                        imageVector = Icons.Default.CheckCircle,
+                                        contentDescription = "Selected",
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(22.dp)
+                                    )
+                                } else {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(20.dp)
+                                            .border(
+                                                1.5.dp,
+                                                MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+                                                CircleShape
+                                            )
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(14.dp))
+
+                PrimaryButton(
+                    text = "Done",
+                    onClick = onDismiss,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        }
+    }
+}
+
+@Composable
 private fun SectionHeader(title: String) {
     Text(
         text = title,
@@ -324,6 +561,7 @@ private fun SettingRow(
     iconTint: Color,
     title: String,
     subtitle: String,
+    trailingContent: (@Composable () -> Unit)? = null,
     onClick: () -> Unit
 ) {
     Row(
@@ -361,6 +599,10 @@ private fun SettingRow(
                 style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
+        }
+
+        if (trailingContent != null) {
+            trailingContent()
         }
 
         Icon(

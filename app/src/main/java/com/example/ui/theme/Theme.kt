@@ -54,7 +54,8 @@ private val LightColorScheme = lightColorScheme(
 @Composable
 fun UniversalPdfTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = false, // Use our tailored professional Indigo/Slate theme
+    colorTheme: AppColorTheme = AppColorTheme.PROFESSIONAL_BLUE,
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
@@ -62,8 +63,8 @@ fun UniversalPdfTheme(
             val context = LocalContext.current
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
+        darkTheme -> colorTheme.darkColorScheme
+        else -> colorTheme.lightColorScheme
     }
 
     MaterialTheme(
@@ -77,8 +78,14 @@ fun UniversalPdfTheme(
 @Composable
 fun MyApplicationTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
+    colorTheme: AppColorTheme = AppColorTheme.PROFESSIONAL_BLUE,
     dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
-    UniversalPdfTheme(darkTheme = darkTheme, dynamicColor = dynamicColor, content = content)
+    UniversalPdfTheme(
+        darkTheme = darkTheme,
+        colorTheme = colorTheme,
+        dynamicColor = dynamicColor,
+        content = content
+    )
 }

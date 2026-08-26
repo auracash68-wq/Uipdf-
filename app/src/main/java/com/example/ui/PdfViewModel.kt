@@ -13,6 +13,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.data.AppThemeMode
 import com.example.data.RecentPdfRepository
+import com.example.data.SettingsRepository
 import com.example.data.db.AppDatabase
 import com.example.engine.FileUtils
 import com.example.engine.PdfProcessor
@@ -27,6 +28,7 @@ import com.example.model.PdfProcessResult
 import com.example.model.RecentPdf
 import com.example.model.SelectedFileItem
 import com.example.model.UserEntitlement
+import com.example.ui.theme.AppColorTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -58,15 +60,14 @@ class PdfViewModel(application: Application) : AndroidViewModel(application) {
 
     private val pdfProcessor = PdfProcessor(application)
     private val recentPdfRepository: RecentPdfRepository
+    private val settingsRepository = SettingsRepository(application)
 
     private val _entitlement = MutableStateFlow(UserEntitlement.FREE)
     val entitlement: StateFlow<UserEntitlement> = _entitlement.asStateFlow()
 
-    private val _themeMode = MutableStateFlow(AppThemeMode.SYSTEM)
-    val themeMode: StateFlow<AppThemeMode> = _themeMode.asStateFlow()
-
-    private val _isFirstLaunch = MutableStateFlow(false)
-    val isFirstLaunch: StateFlow<Boolean> = _isFirstLaunch.asStateFlow()
+    val themeMode: StateFlow<AppThemeMode> = settingsRepository.themeMode
+    val colorTheme: StateFlow<AppColorTheme> = settingsRepository.colorTheme
+    val isFirstLaunch: StateFlow<Boolean> = settingsRepository.isFirstLaunch
 
     val allRecentPdfs: StateFlow<List<RecentPdf>>
     val previewRecentPdfs: StateFlow<List<RecentPdf>>
@@ -107,19 +108,23 @@ class PdfViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun completeOnboarding() {
-        _isFirstLaunch.value = false
+        settingsRepository.completeFirstLaunch()
     }
 
     fun completeFirstLaunch() {
-        _isFirstLaunch.value = false
+        settingsRepository.completeFirstLaunch()
     }
 
     fun setTheme(mode: AppThemeMode) {
-        _themeMode.value = mode
+        settingsRepository.setThemeMode(mode)
     }
 
     fun setThemeMode(mode: AppThemeMode) {
-        _themeMode.value = mode
+        settingsRepository.setThemeMode(mode)
+    }
+
+    fun setColorTheme(theme: AppColorTheme) {
+        settingsRepository.setColorTheme(theme)
     }
 
     fun setEntitlement(entitlement: UserEntitlement) {
