@@ -41,6 +41,11 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -284,7 +289,12 @@ fun PremiumBannerCard(
 }
 
 /**
- * AdMob Banner Container (Gracefully hides for Premium users)
+ * AdMob Banner Container with Stable Reserved Space & Accidental-Click Protection
+ * Strictly complies with Google AdMob Policy:
+ * - Clear visual boundary and "AD" label so users easily distinguish ads from app content
+ * - Safe margins and touch target separation from interactive buttons
+ * - Stable pre-reserved dimensions (prevents layout shift)
+ * - Lifecycle-safe disposal
  */
 @Composable
 fun AdBannerContainer(
@@ -293,26 +303,89 @@ fun AdBannerContainer(
 ) {
     if (entitlement == UserEntitlement.PREMIUM) return
 
-    Box(
+    Surface(
         modifier = modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp),
-        contentAlignment = Alignment.Center
+        shape = RoundedCornerShape(12.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+        border = BorderStroke(
+            width = 1.dp,
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)
+        )
     ) {
-        AndroidView(
-            modifier = Modifier.fillMaxWidth(),
-            factory = { context ->
-                try {
-                    AdView(context).apply {
-                        setAdSize(AdSize.BANNER)
-                        adUnitId = AdManager.BANNER_TEST_ID
-                        loadAd(AdRequest.Builder().build())
-                    }
-                } catch (_: Throwable) {
-                    android.view.View(context)
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 4.dp, bottom = 4.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            // Google AdMob Compliant Label to prevent accidental clicks
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 10.dp, vertical = 2.dp),
+                horizontalArrangement = Arrangement.Start,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Surface(
+                    shape = RoundedCornerShape(4.dp),
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)
+                ) {
+                    Text(
+                        text = "AD",
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 9.sp,
+                            letterSpacing = 0.5.sp
+                        ),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                        modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp)
+                    )
                 }
             }
-        )
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                var adViewRef by remember { mutableStateOf<AdView?>(null) }
+
+                DisposableEffect(Unit) {
+                    onDispose {
+                        try {
+                            adViewRef?.destroy()
+                        } catch (_: Exception) {}
+                        adViewRef = null
+                    }
+                }
+
+                AndroidView(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp),
+                    factory = { context ->
+                        try {
+                            AdView(context).apply {
+                                adViewRef = this
+                                setAdSize(AdSize.BANNER)
+                                adUnitId = AdManager.BANNER_TEST_ID
+                                loadAd(AdRequest.Builder().build())
+                            }
+                        } catch (_: Throwable) {
+                            android.view.View(context)
+                        }
+                    },
+                    update = { view ->
+                        if (view is AdView) {
+                            adViewRef = view
+                        }
+                    }
+                )
+            }
+        }
     }
 }
 
