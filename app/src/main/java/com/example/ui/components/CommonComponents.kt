@@ -43,11 +43,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -155,7 +155,7 @@ fun BentoGridCard(
 }
 
 /**
- * Premium Promotion Banner displaying banner.png
+ * Premium Promotion Banner with gradient background and M3 typography
  */
 @Composable
 fun PremiumBannerCard(
@@ -172,14 +172,78 @@ fun PremiumBannerCard(
         colors = CardDefaults.cardColors(containerColor = Color.Transparent),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Image(
-            painter = painterResource(id = R.drawable.banner),
-            contentDescription = stringResource(R.string.premium_banner_content_desc),
-            contentScale = ContentScale.FillWidth,
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .aspectRatio(4f / 1f)
-        )
+                .background(
+                    Brush.linearGradient(
+                        colors = listOf(
+                            Color(0xFF6750A4),
+                            Color(0xFF4A4458),
+                            Color(0xFF21005D)
+                        )
+                    )
+                )
+                .padding(horizontal = 20.dp, vertical = 16.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Row(
+                    modifier = Modifier.weight(1f),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Surface(
+                        shape = CircleShape,
+                        color = Color(0xFFFFD700).copy(alpha = 0.25f),
+                        modifier = Modifier.size(44.dp)
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                imageVector = Icons.Default.Star,
+                                contentDescription = null,
+                                tint = Color(0xFFFFD700),
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.width(14.dp))
+
+                    Column {
+                        Text(
+                            text = "Upgrade to Pro",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                        Text(
+                            text = "Unlimited file size & zero ads",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color.White.copy(alpha = 0.85f),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                }
+
+                Surface(
+                    shape = RoundedCornerShape(20.dp),
+                    color = Color(0xFFFFD700),
+                    modifier = Modifier.padding(start = 8.dp)
+                ) {
+                    Text(
+                        text = "GET PRO",
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF1D1B20),
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                    )
+                }
+            }
+        }
     }
 }
 
