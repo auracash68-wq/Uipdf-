@@ -28,13 +28,15 @@ class AdManager(
         const val INTERSTITIAL_TEST_ID = "ca-app-pub-3940256099942544/1033173712"
         const val REWARDED_TEST_ID = "ca-app-pub-3940256099942544/5224354917"
 
-        // Frequency capping: at least 2 operations and 60 seconds between interstitials
-        private const val MIN_OPERATIONS_BETWEEN_ADS = 2
-        private const val MIN_INTERVAL_MILLIS = 60_000L
+        // Frequency capping: at least 2 full operations between interstitials
+        private const val MIN_OPERATIONS_BETWEEN_ADS = 3
+        // Minimum cooldown: 120 seconds between successfully shown interstitials
+        private const val MIN_INTERVAL_MILLIS = 120_000L
     }
 
     private var interstitialAd: InterstitialAd? = null
-    private var isAdLoading = AtomicBoolean(false)
+    private val isAdLoading = AtomicBoolean(false)
+    private val isAdShowing = AtomicBoolean(false)
     private var completedOperationsCount = 0
     private var lastAdShownTimestamp = 0L
     private val mainHandler = Handler(Looper.getMainLooper())
@@ -56,7 +58,7 @@ class AdManager(
 
     /**
      * Preloads an interstitial ad proactively so that it is instantly available
-     * when an eligible PDF operation finishes.
+     * without blocking or making the user wait when an eligible transition occurs.
      */
     fun preloadInterstitial() {
         if (isPremium() || interstitialAd != null) return
@@ -65,7 +67,7 @@ class AdManager(
         try {
             val adRequest = AdRequest.Builder().build()
             InterstitialAd.load(
-                context,
+                context.applicationContext,
                 INTERSTITIAL_TEST_ID,
                 adRequest,
                 object : InterstitialAdLoadCallback() {
@@ -95,13 +97,26 @@ class AdManager(
     }
 
     /**
-     * Call after a PDF operation completes successfully.
-     * Checks frequency capping and presents interstitial if eligible.
+     * Call ONLY after a PDF operation completes successfully at a natural transition point.
+     * Evaluates strict Google AdMob policy safeguards:
+     * 1. User is not Premium
+     * 2. Activity is valid, active, not finishing or destroyed
+     * 3. No other Interstitial is currently showing
+     * 4. Preloaded Interstitial is ready immediately (no waiting / no blocking)
+     * 5. Meaningful-action protection (at least 2 operations completed between impressions)
+     * 6. Minimum 120-second cooldown since last successfully shown impression
      */
     fun onOperationCompleted(activity: Activity?, onAdDismissedOrSkipped: () -> Unit) {
         completedOperationsCount++
 
-        if (isPremium() || activity == null) {
+        // 1. Premium & Validity Checks
+        if (isPremium() || activity == null || activity.isFinishing || activity.isDestroyed) {
+            onAdDismissedOrSkipped()
+            return
+        }
+
+        // 2. Concurrency check: Ensure no duplicate or concurrent ad presentation
+        if (isAdShowing.get()) {
             onAdDismissedOrSkipped()
             return
         }
@@ -112,24 +127,47 @@ class AdManager(
 
         val ad = interstitialAd
         if (ad != null && isCountEligible && isIntervalPassed) {
-            ad.fullScreenContentCallback = object : FullScreenContentCallback() {
-                override fun onAdDismissedFullScreenContent() {
+            if (!isAdShowing.compareAndSet(false, true)) {
+                onAdDismissedOrSkipped()
+                return
+            }
+
+            var callbackTriggered = false
+            fun triggerCallbackOnce() {
+                if (!callbackTriggered) {
+                    callbackTriggered = true
+                    isAdShowing.set(false)
                     interstitialAd = null
+                    preloadInterstitial()
+                    mainHandler.post {
+                        onAdDismissedOrSkipped()
+                    }
+                }
+            }
+
+            ad.fullScreenContentCallback = object : FullScreenContentCallback() {
+                override fun onAdShowedFullScreenContent() {
+                    // Update timestamp ONLY when the ad is actually shown
                     lastAdShownTimestamp = System.currentTimeMillis()
                     completedOperationsCount = 0
-                    preloadInterstitial()
-                    onAdDismissedOrSkipped()
+                }
+
+                override fun onAdDismissedFullScreenContent() {
+                    triggerCallbackOnce()
                 }
 
                 override fun onAdFailedToShowFullScreenContent(error: AdError) {
-                    interstitialAd = null
-                    preloadInterstitial()
-                    onAdDismissedOrSkipped()
+                    triggerCallbackOnce()
                 }
             }
-            ad.show(activity)
+
+            try {
+                ad.show(activity)
+            } catch (_: Exception) {
+                triggerCallbackOnce()
+            }
         } else {
-            // If ad is not yet cached, request preload immediately
+            // Ad not ready or not eligible yet: Never wait or block the user
             if (interstitialAd == null) {
                 preloadInterstitial()
             }
