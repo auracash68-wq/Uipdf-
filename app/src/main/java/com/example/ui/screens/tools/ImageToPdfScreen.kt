@@ -89,7 +89,6 @@ fun ImageToPdfScreen(
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState()
     val entitlement by viewModel.entitlement.collectAsState()
-    val guideVideosEnabled by viewModel.guideVideosEnabled.collectAsState()
 
     val selectedImages = remember { mutableStateListOf<SelectedImageItem>() }
     var pageSize by remember { mutableStateOf(DocPageSize.A4) }
@@ -407,12 +406,11 @@ fun ImageToPdfScreen(
                 }
             }
 
-            // Video Guide & Large Ad Section (Bottom UX Priority)
+            // Ad Section (Bottom UX Priority)
             item {
                 ToolGuideAndAdSection(
                     toolKey = "image_to_pdf",
-                    entitlement = entitlement,
-                    guideVideosEnabled = guideVideosEnabled
+                    entitlement = entitlement
                 )
             }
         }

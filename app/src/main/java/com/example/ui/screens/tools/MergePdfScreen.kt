@@ -83,7 +83,6 @@ fun MergePdfScreen(
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState()
     val entitlement by viewModel.entitlement.collectAsState()
-    val guideVideosEnabled by viewModel.guideVideosEnabled.collectAsState()
 
     val selectedFiles = remember { mutableStateListOf<SelectedFileItem>() }
     var outputFileName by remember { mutableStateOf("Merged_Document") }
@@ -309,12 +308,11 @@ fun MergePdfScreen(
                 }
             }
 
-            // Video Guide & Large Ad Section (Bottom UX Priority)
+            // Ad Section (Bottom UX Priority)
             item {
                 ToolGuideAndAdSection(
                     toolKey = "merge",
-                    entitlement = entitlement,
-                    guideVideosEnabled = guideVideosEnabled
+                    entitlement = entitlement
                 )
             }
         }

@@ -67,7 +67,6 @@ fun TextToPdfScreen(
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState()
     val entitlement by viewModel.entitlement.collectAsState()
-    val guideVideosEnabled by viewModel.guideVideosEnabled.collectAsState()
 
     var titleText by remember { mutableStateOf("") }
     var bodyText by remember { mutableStateOf("") }
@@ -204,12 +203,11 @@ fun TextToPdfScreen(
                 }
             }
 
-            // Video Guide & Large Ad Section (Bottom UX Priority)
+            // Ad Section (Bottom UX Priority)
             item {
                 ToolGuideAndAdSection(
                     toolKey = "text_to_pdf",
-                    entitlement = entitlement,
-                    guideVideosEnabled = guideVideosEnabled
+                    entitlement = entitlement
                 )
             }
         }

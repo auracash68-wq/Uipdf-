@@ -68,12 +68,6 @@ class PdfViewModel(application: Application) : AndroidViewModel(application) {
     private val _isFirstLaunch = MutableStateFlow(false)
     val isFirstLaunch: StateFlow<Boolean> = _isFirstLaunch.asStateFlow()
 
-    private val _guideVideosEnabled = MutableStateFlow(false)
-    val guideVideosEnabled: StateFlow<Boolean> = _guideVideosEnabled.asStateFlow()
-
-    private val _isGuideVideoPreferenceAsked = MutableStateFlow(true)
-    val isGuideVideoPreferenceAsked: StateFlow<Boolean> = _isGuideVideoPreferenceAsked.asStateFlow()
-
     val allRecentPdfs: StateFlow<List<RecentPdf>>
     val previewRecentPdfs: StateFlow<List<RecentPdf>>
 
@@ -112,22 +106,11 @@ class PdfViewModel(application: Application) : AndroidViewModel(application) {
         _toastMessage.value = null
     }
 
-    fun setGuideVideosEnabled(enabled: Boolean) {
-        _guideVideosEnabled.value = enabled
-        _isGuideVideoPreferenceAsked.value = true
-    }
-
-    fun completeOnboarding(enableGuides: Boolean) {
-        _guideVideosEnabled.value = enableGuides
-        _isGuideVideoPreferenceAsked.value = true
+    fun completeOnboarding() {
         _isFirstLaunch.value = false
     }
 
-    fun completeFirstLaunch(enableGuides: Boolean? = null) {
-        if (enableGuides != null) {
-            _guideVideosEnabled.value = enableGuides
-            _isGuideVideoPreferenceAsked.value = true
-        }
+    fun completeFirstLaunch() {
         _isFirstLaunch.value = false
     }
 
@@ -148,10 +131,6 @@ class PdfViewModel(application: Application) : AndroidViewModel(application) {
     fun buyPremium(activity: Activity?) {
         _entitlement.value = UserEntitlement.PREMIUM
         _toastMessage.value = "Premium Plan Activated!"
-    }
-
-    fun restorePurchases() {
-        _toastMessage.value = "Purchases Restored Successfully."
     }
 
     // =========================================================================

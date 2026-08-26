@@ -77,7 +77,6 @@ fun SplitPdfScreen(
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState()
     val entitlement by viewModel.entitlement.collectAsState()
-    val guideVideosEnabled by viewModel.guideVideosEnabled.collectAsState()
 
     var selectedUri by remember { mutableStateOf<Uri?>(null) }
     var selectedFileName by remember { mutableStateOf("") }
@@ -306,12 +305,11 @@ fun SplitPdfScreen(
                 }
             }
 
-            // Video Guide & Large Ad Section (Bottom UX Priority)
+            // Ad Section (Bottom UX Priority)
             item {
                 ToolGuideAndAdSection(
                     toolKey = "split",
-                    entitlement = entitlement,
-                    guideVideosEnabled = guideVideosEnabled
+                    entitlement = entitlement
                 )
             }
         }

@@ -67,7 +67,6 @@ fun SettingsScreen(
 ) {
     val themeMode by viewModel.themeMode.collectAsState()
     val entitlement by viewModel.entitlement.collectAsState()
-    val guideVideosEnabled by viewModel.guideVideosEnabled.collectAsState()
 
     var showPrivacyDialog by remember { mutableStateOf(false) }
     var showTermsDialog by remember { mutableStateOf(false) }
@@ -98,28 +97,6 @@ fun SettingsScreen(
                     text = "Preferences & Privacy Control",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
-
-        // Section: Preferences & Guides
-        item {
-            SectionHeader(title = "PREFERENCES")
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 18.dp, vertical = 4.dp),
-                shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-            ) {
-                SettingSwitchRow(
-                    icon = Icons.Default.Videocam,
-                    iconTint = MaterialTheme.colorScheme.primary,
-                    title = stringResource(R.string.settings_guide_videos_title),
-                    subtitle = stringResource(R.string.settings_guide_videos_desc),
-                    checked = guideVideosEnabled,
-                    onCheckedChange = { viewModel.setGuideVideosEnabled(it) },
-                    testTag = "switch_guide_videos"
                 )
             }
         }
@@ -161,17 +138,9 @@ fun SettingsScreen(
                 SettingRow(
                     icon = Icons.Default.MonetizationOn,
                     iconTint = PremiumGold,
-                    title = "Membership",
-                    subtitle = if (entitlement == UserEntitlement.PREMIUM) "Premium Active (Ad-Free Lifetime)" else "Free Tier (Supported by Ads)",
+                    title = "Subscription",
+                    subtitle = "Subscription",
                     onClick = onNavigateToPremium
-                )
-
-                SettingRow(
-                    icon = Icons.Default.Restore,
-                    iconTint = MaterialTheme.colorScheme.secondary,
-                    title = "Restore Purchases",
-                    subtitle = "Verify existing Google Play purchase",
-                    onClick = { viewModel.restorePurchases() }
                 )
             }
         }

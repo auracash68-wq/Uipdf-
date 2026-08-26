@@ -2,6 +2,8 @@ package com.example.data
 
 import android.app.Activity
 import android.content.Context
+import android.os.Handler
+import android.os.Looper
 import com.example.model.UserEntitlement
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdRequest
@@ -12,6 +14,7 @@ import com.google.android.gms.ads.interstitial.InterstitialAd
 import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
 import com.google.android.gms.ads.rewarded.RewardedAd
 import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback
+import java.util.concurrent.atomic.AtomicBoolean
 
 class AdManager(
     private val context: Context,
@@ -31,17 +34,18 @@ class AdManager(
     }
 
     private var interstitialAd: InterstitialAd? = null
-    private var rewardedAd: RewardedAd? = null
-    private var isAdLoading = false
+    private var isAdLoading = AtomicBoolean(false)
     private var completedOperationsCount = 0
     private var lastAdShownTimestamp = 0L
+    private val mainHandler = Handler(Looper.getMainLooper())
+    private var retryAttempt = 0
 
     init {
         try {
             MobileAds.initialize(context) {
-                try {
+                mainHandler.post {
                     preloadInterstitial()
-                } catch (_: Exception) {}
+                }
             }
         } catch (_: Exception) {}
     }
@@ -50,11 +54,15 @@ class AdManager(
         return billingManager.entitlement.value == UserEntitlement.PREMIUM
     }
 
+    /**
+     * Preloads an interstitial ad proactively so that it is instantly available
+     * when an eligible PDF operation finishes.
+     */
     fun preloadInterstitial() {
-        if (isPremium() || isAdLoading || interstitialAd != null) return
+        if (isPremium() || interstitialAd != null) return
+        if (!isAdLoading.compareAndSet(false, true)) return
 
         try {
-            isAdLoading = true
             val adRequest = AdRequest.Builder().build()
             InterstitialAd.load(
                 context,
@@ -63,17 +71,26 @@ class AdManager(
                 object : InterstitialAdLoadCallback() {
                     override fun onAdLoaded(ad: InterstitialAd) {
                         interstitialAd = ad
-                        isAdLoading = false
+                        isAdLoading.set(false)
+                        retryAttempt = 0
                     }
 
                     override fun onAdFailedToLoad(error: LoadAdError) {
                         interstitialAd = null
-                        isAdLoading = false
+                        isAdLoading.set(false)
+                        // Exponential backoff retry (max 3 retries, compliant with Google AdMob policy)
+                        if (retryAttempt < 3) {
+                            retryAttempt++
+                            val delay = (retryAttempt * 5000L)
+                            mainHandler.postDelayed({
+                                preloadInterstitial()
+                            }, delay)
+                        }
                     }
                 }
             )
         } catch (_: Exception) {
-            isAdLoading = false
+            isAdLoading.set(false)
         }
     }
 
@@ -112,7 +129,7 @@ class AdManager(
             }
             ad.show(activity)
         } else {
-            // Not eligible or ad not ready yet, continue seamlessly without delay
+            // If ad is not yet cached, request preload immediately
             if (interstitialAd == null) {
                 preloadInterstitial()
             }

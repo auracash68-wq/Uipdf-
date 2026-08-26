@@ -28,6 +28,7 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.WorkspacePremium
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -155,7 +156,7 @@ fun BentoGridCard(
 }
 
 /**
- * Premium Promotion Banner with gradient background and M3 typography
+ * Premium Promotion Banner with modern professional color grading and high-end graphic treatment
  */
 @Composable
 fun PremiumBannerCard(
@@ -165,12 +166,22 @@ fun PremiumBannerCard(
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(20.dp))
+            .clip(RoundedCornerShape(18.dp))
             .clickable(onClick = onUpgradeClick)
             .testTag("premium_banner_card"),
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedCornerShape(18.dp),
+        border = BorderStroke(
+            width = 1.dp,
+            brush = Brush.horizontalGradient(
+                colors = listOf(
+                    Color(0x40818CF8),
+                    Color(0x15FFFFFF),
+                    Color(0x30818CF8)
+                )
+            )
+        ),
         colors = CardDefaults.cardColors(containerColor = Color.Transparent),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
     ) {
         Box(
             modifier = Modifier
@@ -178,13 +189,13 @@ fun PremiumBannerCard(
                 .background(
                     Brush.linearGradient(
                         colors = listOf(
-                            Color(0xFF6750A4),
-                            Color(0xFF4A4458),
-                            Color(0xFF21005D)
+                            Color(0xFF0F172A),
+                            Color(0xFF1E1B4B),
+                            Color(0xFF172554)
                         )
                     )
                 )
-                .padding(horizontal = 20.dp, vertical = 16.dp)
+                .padding(horizontal = 18.dp, vertical = 14.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -196,16 +207,28 @@ fun PremiumBannerCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Surface(
-                        shape = CircleShape,
-                        color = Color(0xFFFFD700).copy(alpha = 0.25f),
-                        modifier = Modifier.size(44.dp)
+                        shape = RoundedCornerShape(12.dp),
+                        color = Color(0xFF1E293B),
+                        border = BorderStroke(1.dp, Color(0x33F59E0B)),
+                        modifier = Modifier.size(42.dp)
                     ) {
-                        Box(contentAlignment = Alignment.Center) {
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier
+                                .background(
+                                    Brush.radialGradient(
+                                        colors = listOf(
+                                            Color(0x3DF59E0B),
+                                            Color(0x05F59E0B)
+                                        )
+                                    )
+                                )
+                        ) {
                             Icon(
-                                imageVector = Icons.Default.Star,
-                                contentDescription = null,
-                                tint = Color(0xFFFFD700),
-                                modifier = Modifier.size(24.dp)
+                                imageVector = Icons.Default.WorkspacePremium,
+                                contentDescription = "Pro Member",
+                                tint = Color(0xFFFBBF24),
+                                modifier = Modifier.size(22.dp)
                             )
                         }
                     }
@@ -214,15 +237,18 @@ fun PremiumBannerCard(
 
                     Column {
                         Text(
-                            text = "Upgrade to Pro",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
+                            text = "Unlock Pro Suite",
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.SemiBold,
+                                letterSpacing = 0.2.sp
+                            ),
                             color = Color.White
                         )
+                        Spacer(modifier = Modifier.height(2.dp))
                         Text(
-                            text = "Unlimited file size & zero ads",
+                            text = "Ad-free experience & unlimited capacities",
                             style = MaterialTheme.typography.bodySmall,
-                            color = Color.White.copy(alpha = 0.85f),
+                            color = Color(0xFF94A3B8),
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )
@@ -230,17 +256,27 @@ fun PremiumBannerCard(
                 }
 
                 Surface(
-                    shape = RoundedCornerShape(20.dp),
-                    color = Color(0xFFFFD700),
-                    modifier = Modifier.padding(start = 8.dp)
+                    shape = RoundedCornerShape(10.dp),
+                    color = Color(0xFF4F46E5),
+                    modifier = Modifier.padding(start = 10.dp)
                 ) {
-                    Text(
-                        text = "GET PRO",
-                        style = MaterialTheme.typography.labelMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1D1B20),
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
-                    )
+                    Row(
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Upgrade",
+                            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                            color = Color.White
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Icon(
+                            imageVector = Icons.Default.ArrowForward,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(12.dp)
+                        )
+                    }
                 }
             }
         }
