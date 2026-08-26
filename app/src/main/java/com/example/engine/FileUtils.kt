@@ -57,6 +57,10 @@ object FileUtils {
         } catch (_: Exception) {}
     }
 
+    fun clearCacheDirectory(context: Context) {
+        cleanTempFiles(context)
+    }
+
     fun getFileName(context: Context, uri: Uri): String {
         var name: String? = null
         if (uri.scheme == "content") {
@@ -104,12 +108,17 @@ object FileUtils {
         return tempFile
     }
 
-    fun exportPdfToUri(context: Context, sourceFile: File, destUri: Uri) {
-        context.contentResolver.openOutputStream(destUri)?.use { output ->
-            FileInputStream(sourceFile).use { input ->
-                input.copyTo(output)
-            }
-        } ?: throw IllegalStateException("Unable to write to destination.")
+    fun exportPdfToUri(context: Context, sourceFile: File, destUri: Uri): Boolean {
+        return try {
+            context.contentResolver.openOutputStream(destUri)?.use { output ->
+                FileInputStream(sourceFile).use { input ->
+                    input.copyTo(output)
+                }
+            } ?: return false
+            true
+        } catch (_: Exception) {
+            false
+        }
     }
 
     fun formatFileSize(bytes: Long): String {
@@ -136,7 +145,6 @@ object FileUtils {
     fun sanitizeFileName(input: String): String {
         val trimmed = input.trim()
         if (trimmed.isEmpty()) return "document.pdf"
-        // Remove characters forbidden on filesystem: / \ ? % * : | " < >
         val sanitized = trimmed.replace(Regex("[/\\\\?%*:|\"<>]"), "_")
         return sanitized.ifEmpty { "document.pdf" }
     }
