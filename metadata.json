@@ -1,5 +1,5 @@
 {
-  "name": "PDF Suite",
+  "name": "Sweet PDF",
   "description": "Privacy-first on-device PDF utility for merging, splitting, converting, locking, signing, and compressing documents locally.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]

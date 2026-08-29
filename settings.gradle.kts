@@ -22,6 +22,6 @@ dependencyResolutionManagement {
   }
 }
 
-rootProject.name = "PDF Suite"
+rootProject.name = "Sweet PDF"
 
 include(":app")

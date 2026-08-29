@@ -315,7 +315,7 @@ fun SettingsScreen(
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(
-                        text = "PDF Suite is provided as a utility tool for managing PDF files.\n\n" +
+                        text = "Sweet PDF is provided as a utility tool for managing PDF files.\n\n" +
                                 "• Free users can access all tools supported by Google AdMob advertisements.\n" +
                                 "• A one-time purchase of ₹29 grants permanent ad-free access on your Google Play account.\n" +
                                 "• You retain full ownership and copyright of all documents created or modified with this utility.",
@@ -710,7 +710,7 @@ private fun PrivacyPolicyDialog(
                             color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
-                            text = "PDF Suite • ViridOrigin Systems",
+                            text = "Sweet PDF • ViridOrigin Systems",
                             style = MaterialTheme.typography.labelMedium,
                             color = MaterialTheme.colorScheme.primary
                         )
@@ -751,8 +751,8 @@ private fun PrivacyPolicyDialog(
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = "• Application: PDF Suite\n" +
-                                        "• Package ID: com.aistudio.pdfutility.qxvrmp\n" +
+                                text = "• Application: Sweet PDF\n" +
+                                        "• Package ID: com.sweetpdf.android.gazi\n" +
                                         "• Publisher / Developer: ViridOrigin Systems (SahidHosenGazi)\n" +
                                         "• Contact: viridoriginsystems@gmail.com\n" +
                                         "• Location: West Bengal, PIN: 743425, India\n" +
@@ -764,15 +764,15 @@ private fun PrivacyPolicyDialog(
                     }
 
                     PrivacySection(
-                        title = "1. About PDF Suite",
-                        body = "PDF Suite is a utility application designed to help Android users create, manage, and process PDF documents locally on their mobile devices.\n\n" +
+                        title = "1. About Sweet PDF",
+                        body = "Sweet PDF is a utility application designed to help Android users create, manage, and process PDF documents locally on their mobile devices.\n\n" +
                                 "The application currently includes tools for Merging PDFs, Splitting PDFs, Compressing PDFs, converting Images to PDF, converting Text to PDF, Password-Protecting (Locking) PDFs, Removing Passwords (Unlocking) PDFs, Rotating Pages, Extracting Pages, and Applying Signatures to PDFs.\n\n" +
                                 "The application is built on an on-device processing model where core document operations execute locally inside the private Android sandbox on your device."
                     )
 
                     PrivacySection(
                         title = "2. Information We Process",
-                        body = "ViridOrigin Systems does not operate user accounts, customer registration systems, or remote document-ingestion servers for PDF Suite.\n\n" +
+                        body = "ViridOrigin Systems does not operate user accounts, customer registration systems, or remote document-ingestion servers for Sweet PDF.\n\n" +
                                 "Information processed by or through the application is categorized as follows:\n\n" +
                                 "• User-Selected Documents and Images: Files you explicitly select using Android's system picker are accessed strictly for the requested utility operation.\n" +
                                 "• User-Entered Text and Annotations: Text entered into the Text-to-PDF tool and hand-drawn strokes created in the signature pad are processed in volatile memory on-device.\n" +
@@ -784,7 +784,7 @@ private fun PrivacyPolicyDialog(
 
                     PrivacySection(
                         title = "3. How PDF Files and Images Are Processed",
-                        body = "• Storage Access Framework (SAF): When you choose to open or modify a file, you interact with Android's system file picker. PDF Suite receives temporary access only to the specific URI you select.\n\n" +
+                        body = "• Storage Access Framework (SAF): When you choose to open or modify a file, you interact with Android's system file picker. Sweet PDF receives temporary access only to the specific URI you select.\n\n" +
                                 "• Local Temporary Staging: The selected document stream is temporarily copied into the application's private cache directory (cache/pdf_temp/) for processing.\n\n" +
                                 "• On-Device Engine: PDF processing is executed using the open-source Apache PDFBox Android library (com.tom-roush:pdfbox-android) and native Android Graphics APIs on your device CPU/memory.\n\n" +
                                 "• Output Generation: Newly created or modified PDF files are written to the application's sandboxed storage directory (files/generated_pdfs/).\n\n" +
@@ -795,7 +795,7 @@ private fun PrivacyPolicyDialog(
 
                     PrivacySection(
                         title = "4. Local Storage and Recent Files",
-                        body = "PDF Suite maintains a local record of recently generated documents using an on-device SQLite database managed by Android Jetpack Room (pdf_utility_database).\n\n" +
+                        body = "Sweet PDF maintains a local record of recently generated documents using an on-device SQLite database managed by Android Jetpack Room (pdf_utility_database).\n\n" +
                                 "The recent_pdfs table stores:\n" +
                                 "• Unique item ID (auto-generated)\n" +
                                 "• Display file name\n" +
@@ -809,7 +809,7 @@ private fun PrivacyPolicyDialog(
 
                     PrivacySection(
                         title = "5. Permissions and Device Access",
-                        body = "PDF Suite declares and uses only the following minimal standard permissions in its Android Manifest:\n\n" +
+                        body = "Sweet PDF declares and uses only the following minimal standard permissions in its Android Manifest:\n\n" +
                                 "• INTERNET (android.permission.INTERNET): Required exclusively for Google Mobile Ads SDK communication to load advertisements in the free tier, and for Google Play Billing operations.\n\n" +
                                 "• ACCESS_NETWORK_STATE (android.permission.ACCESS_NETWORK_STATE): Used to detect active Internet connectivity before making ad requests.\n\n" +
                                 "What We DO NOT Request or Access:\n" +
@@ -822,7 +822,7 @@ private fun PrivacyPolicyDialog(
 
                     PrivacySection(
                         title = "6. Internet and Network Communication",
-                        body = "ViridOrigin Systems does not maintain any custom backend servers, web services, REST APIs, or cloud document repositories for PDF Suite.\n\n" +
+                        body = "ViridOrigin Systems does not maintain any custom backend servers, web services, REST APIs, or cloud document repositories for Sweet PDF.\n\n" +
                                 "Your documents, images, text, and signatures are processed locally and are NEVER transmitted over the Internet to ViridOrigin Systems or any cloud storage provider.\n\n" +
                                 "Network traffic generated by the application is confined to:\n" +
                                 "1. Google Mobile Ads SDK (AdMob) for serving banner and interstitial advertisements in the ad-supported tier.\n" +
@@ -831,7 +831,7 @@ private fun PrivacyPolicyDialog(
 
                     PrivacySection(
                         title = "7. Advertising and Third-Party Services",
-                        body = "To keep core PDF utility features accessible free of charge, PDF Suite integrates the Google Mobile Ads SDK (com.google.android.gms:play-services-ads).\n\n" +
+                        body = "To keep core PDF utility features accessible free of charge, Sweet PDF integrates the Google Mobile Ads SDK (com.google.android.gms:play-services-ads).\n\n" +
                                 "• Data Handled by Google: When advertisements are requested, Google AdMob may collect and process device-specific information, coarse network information (such as IP address), app performance diagnostics, and advertising identifiers (such as the Google Advertising ID / AAID) subject to Google's Privacy Policy.\n\n" +
                                 "• Ad Placement & Frequency: The app displays standard banner ads and frequency-capped interstitial ads. Ads are throttled to avoid disruptive experiences.\n\n" +
                                 "• Ad Suppression: Advertisements are suppressed across the entire application if an ad-free premium entitlement is active.\n\n" +
@@ -840,7 +840,7 @@ private fun PrivacyPolicyDialog(
 
                     PrivacySection(
                         title = "8. Payments and Premium Features",
-                        body = "PDF Suite includes architectural support for Google Play In-App Billing (com.android.billingclient:billing-ktx) to enable an optional one-time purchase for permanent ad removal.\n\n" +
+                        body = "Sweet PDF includes architectural support for Google Play In-App Billing (com.android.billingclient:billing-ktx) to enable an optional one-time purchase for permanent ad removal.\n\n" +
                                 "• Marketplace Neutrality: In distributions or marketplaces where in-app billing is not provisioned or active, the application operates in standard mode.\n\n" +
                                 "• Financial Data Security: ViridOrigin Systems does not collect, receive, process, or store credit card details, debit card numbers, bank accounts, or billing addresses. All payment transactions are handled directly and securely by the relevant app store platform (such as Google Play)."
                     )
@@ -859,7 +859,7 @@ private fun PrivacyPolicyDialog(
                         body = "• Temporary Files: Files placed in cache/pdf_temp/ are automatically purged during cache clearing operations or when reclaimed by the Android operating system.\n\n" +
                                 "• Generated Files: Files in files/generated_pdfs/ remain stored locally on your device until you delete them via the Recent screen or clear the application's storage in Android Settings.\n\n" +
                                 "• History Records: Recent file metadata in the Room SQLite database is retained until manually deleted by you or upon app uninstallation.\n\n" +
-                                "• Full Erasure: Uninstalling PDF Suite permanently deletes all sandboxed files, local database records, cache, and SharedPreferences from your device."
+                                "• Full Erasure: Uninstalling Sweet PDF permanently deletes all sandboxed files, local database records, cache, and SharedPreferences from your device."
                     )
 
                     PrivacySection(
@@ -873,23 +873,23 @@ private fun PrivacyPolicyDialog(
 
                     PrivacySection(
                         title = "12. Backup and Device Transfer",
-                        body = "PDF Suite participates in Android's standard Auto Backup framework (as defined in backup_rules.xml and data_extraction_rules.xml).\n\n" +
+                        body = "Sweet PDF participates in Android's standard Auto Backup framework (as defined in backup_rules.xml and data_extraction_rules.xml).\n\n" +
                                 "Application preferences (theme, settings) and Room database metadata may be backed up to your personal cloud backup (e.g., Google Drive) according to your device OS settings.\n\n" +
                                 "Temporary processing caches are excluded from backup. You can disable cloud backups for all apps in your Android system settings."
                     )
 
                     PrivacySection(
                         title = "13. Children's Privacy",
-                        body = "PDF Suite is a general-purpose utility tool intended for general audiences. The application is not directed at children under the age of 13 (or the applicable age in your jurisdiction).\n\n" +
+                        body = "Sweet PDF is a general-purpose utility tool intended for general audiences. The application is not directed at children under the age of 13 (or the applicable age in your jurisdiction).\n\n" +
                                 "We do not knowingly collect, solicit, or store personal information from children."
                     )
 
                     PrivacySection(
                         title = "14. Your Privacy Choices and Control",
-                        body = "You maintain full control over your data while using PDF Suite:\n\n" +
+                        body = "You maintain full control over your data while using Sweet PDF:\n\n" +
                                 "• File Ingestion Control: You choose which specific documents to open via the system picker.\n" +
                                 "• Deletion Controls: You can delete individual recent entries or clear the entire history at any time.\n" +
-                                "• Storage Reset: You can clear all data by navigating to Android Settings > Apps > PDF Suite > Storage > Clear Data.\n" +
+                                "• Storage Reset: You can clear all data by navigating to Android Settings > Apps > Sweet PDF > Storage > Clear Data.\n" +
                                 "• Advertising Preferences: You can reset your Advertising ID or opt out of interest-based ads through your Android system settings.\n" +
                                 "• Depending on your location and applicable data protection legislation (such as in India, the EEA/UK, or California), you may have statutory rights regarding third-party service data."
                     )
@@ -909,12 +909,12 @@ private fun PrivacyPolicyDialog(
 
                     PrivacySection(
                         title = "17. Contact Us",
-                        body = "If you have any questions, inquiries, or concerns regarding this Privacy Policy or the data practices of PDF Suite, please contact us:\n\n" +
+                        body = "If you have any questions, inquiries, or concerns regarding this Privacy Policy or the data practices of Sweet PDF, please contact us:\n\n" +
                                 "• Entity: ViridOrigin Systems\n" +
                                 "• Developer: SahidHosenGazi\n" +
                                 "• Email: viridoriginsystems@gmail.com\n" +
                                 "• Location: West Bengal, PIN: 743425, India\n" +
-                                "• Application Package: com.aistudio.pdfutility.qxvrmp"
+                                "• Application Package: com.sweetpdf.android.gazi"
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
