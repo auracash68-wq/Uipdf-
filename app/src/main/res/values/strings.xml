@@ -220,10 +220,16 @@
     <string name="video_guide_offline_hint">Connect to the internet to load the video tutorial or watch on YouTube.</string>
     <string name="btn_watch_youtube">Watch on YouTube</string>
     
-    <!-- Internet Required for Free Mode Warning -->
-    <string name="internet_warning_title">Internet Required for Free Mode</string>
-    <string name="internet_warning_body">Your documents are processed entirely on your device and are not uploaded to our servers.\n\nFree mode needs an Internet connection only to display advertisements.\n\nYou can turn on Wi-Fi or mobile data to continue using Free mode, or upgrade to Premium for an ad-free experience.</string>
-    <string name="btn_open_internet_settings">Open Internet Settings</string>
+    <!-- Internet Required for Free Mode Warning & Gating -->
+    <string name="internet_required_title">Internet connection required</string>
+    <string name="internet_required_desc">Please turn on your internet connection to continue using Sweet PDF.</string>
+    <string name="btn_turn_on_internet">Turn On Internet</string>
+    <string name="internet_disconnected_title">Internet Disconnected</string>
+    <string name="internet_disconnected_after_op_desc">Your PDF operation was completed successfully, but your internet connection is currently unavailable. Please reconnect to continue using Sweet PDF.</string>
+    <string name="btn_reconnect_internet">Reconnect Internet</string>
+    <string name="internet_warning_title">Internet connection required</string>
+    <string name="internet_warning_body">Please turn on your internet connection to continue using Sweet PDF.</string>
+    <string name="btn_open_internet_settings">Turn On Internet</string>
     <string name="btn_get_premium">Get Premium</string>
 
     <!-- Recent Item Actions -->

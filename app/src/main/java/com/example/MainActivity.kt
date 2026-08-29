@@ -33,6 +33,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -43,7 +44,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.data.AppThemeMode
+import com.example.engine.NetworkUtils
+import com.example.ui.OperationUiState
 import com.example.ui.PdfViewModel
+import com.example.ui.components.OfflineBlockingScreen
 import com.example.ui.components.OnboardingDialog
 import com.example.ui.screens.HomeScreen
 import com.example.ui.screens.PremiumScreen
@@ -78,6 +82,11 @@ class MainActivity : ComponentActivity() {
 
     private val viewModel: PdfViewModel by viewModels()
 
+    override fun onResume() {
+        super.onResume()
+        viewModel.refreshConnectivity()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -86,6 +95,10 @@ class MainActivity : ComponentActivity() {
             val themeMode by viewModel.themeMode.collectAsState()
             val colorTheme by viewModel.colorTheme.collectAsState()
             val isFirstLaunch by viewModel.isFirstLaunch.collectAsState()
+            val isOnline by viewModel.isOnline.collectAsState()
+            val uiState by viewModel.uiState.collectAsState()
+            val justCompletedOperationOffline by viewModel.justCompletedOperationOffline.collectAsState()
+            val context = LocalContext.current
 
             val isDarkTheme = when (themeMode) {
                 AppThemeMode.SYSTEM -> isSystemInDarkTheme()
@@ -349,11 +362,25 @@ class MainActivity : ComponentActivity() {
                             }
                         }
 
-                        if (isFirstLaunch) {
+                        if (isFirstLaunch && isOnline) {
                             OnboardingDialog(
                                 onComplete = {
                                     viewModel.completeOnboarding()
                                 }
+                            )
+                        }
+
+                        // Controlled full-screen blocking UI when offline.
+                        // Priority invariant: never interrupt an in-flight PDF processing operation
+                        // or an active operation success/export dialog.
+                        val isProcessing = uiState is OperationUiState.Processing
+                        val isSuccessResultShowing = uiState is OperationUiState.Success
+                        if (!isOnline && !isProcessing && !isSuccessResultShowing) {
+                            OfflineBlockingScreen(
+                                onTurnOnInternet = {
+                                    NetworkUtils.openInternetSettings(context)
+                                },
+                                isPostOperationNotice = justCompletedOperationOffline
                             )
                         }
                     }

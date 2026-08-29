@@ -17,6 +17,7 @@ import com.example.data.RecentPdfRepository
 import com.example.data.SettingsRepository
 import com.example.data.db.AppDatabase
 import com.example.engine.FileUtils
+import com.example.engine.NetworkUtils
 import com.example.engine.PdfProcessor
 import com.example.engine.PdfStatusInfo
 import com.example.model.CompressionPreset
@@ -81,6 +82,12 @@ class PdfViewModel(application: Application) : AndroidViewModel(application) {
 
     var pendingExportFile: File? = null
 
+    private val _isOnline = MutableStateFlow(NetworkUtils.isInternetAvailable(application))
+    val isOnline: StateFlow<Boolean> = _isOnline.asStateFlow()
+
+    private val _justCompletedOperationOffline = MutableStateFlow(false)
+    val justCompletedOperationOffline: StateFlow<Boolean> = _justCompletedOperationOffline.asStateFlow()
+
     init {
         val database = AppDatabase.getDatabase(application)
         recentPdfRepository = RecentPdfRepository(database.pdfDao())
@@ -98,6 +105,27 @@ class PdfViewModel(application: Application) : AndroidViewModel(application) {
                 started = SharingStarted.WhileSubscribed(5000),
                 initialValue = emptyList()
             )
+
+        viewModelScope.launch {
+            NetworkUtils.observeNetworkConnectivity(application).collect { online ->
+                _isOnline.value = online
+                if (online) {
+                    _justCompletedOperationOffline.value = false
+                }
+            }
+        }
+    }
+
+    fun refreshConnectivity() {
+        val online = NetworkUtils.isInternetAvailable(getApplication())
+        _isOnline.value = online
+        if (online) {
+            _justCompletedOperationOffline.value = false
+        }
+    }
+
+    fun clearPostOperationOfflineNotice() {
+        _justCompletedOperationOffline.value = false
     }
 
     fun resetState() {
@@ -366,6 +394,9 @@ class PdfViewModel(application: Application) : AndroidViewModel(application) {
                     pageCount = result.pageCount,
                     operationType = operationType
                 )
+                if (!_isOnline.value) {
+                    _justCompletedOperationOffline.value = true
+                }
                 // Evaluate eligible interstitial without blocking completion
                 activity?.let { act ->
                     AdManager.getInstance(getApplication()).onOperationCompleted(act) {}
