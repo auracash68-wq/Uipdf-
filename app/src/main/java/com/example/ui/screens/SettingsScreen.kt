@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -18,11 +19,14 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.MonetizationOn
@@ -35,7 +39,9 @@ import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Switch
@@ -57,6 +63,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.example.R
 import com.example.data.AppThemeMode
 import com.example.model.UserEntitlement
@@ -288,34 +295,9 @@ fun SettingsScreen(
     }
 
     if (showPrivacyDialog) {
-        Dialog(onDismissRequest = { showPrivacyDialog = false }) {
-            Card(
-                shape = RoundedCornerShape(24.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                modifier = Modifier.padding(16.dp)
-            ) {
-                Column(modifier = Modifier.padding(22.dp)) {
-                    Text(
-                        text = "Privacy Guarantee",
-                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Spacer(modifier = Modifier.height(12.dp))
-                    Text(
-                        text = "PDF Suite is strictly designed with privacy-first architecture:\n\n" +
-                                "• 100% On-Device Processing: All PDF operations (merging, splitting, encryption, signatures) occur locally inside the device sandbox.\n" +
-                                "• Zero Cloud Uploads: Documents and images are never uploaded to any remote server or AI service.\n" +
-                                "• Free Mode Ad Usage: Free mode requires an Internet connection only to display advertisements. Your documents are never transmitted.\n" +
-                                "• Minimal Permissions: The app uses Android Storage Access Framework (SAF) without requesting broad filesystem storage permissions.",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        lineHeight = 20.sp
-                    )
-                    Spacer(modifier = Modifier.height(18.dp))
-                    PrimaryButton(text = "Close", onClick = { showPrivacyDialog = false })
-                }
-            }
-        }
+        PrivacyPolicyDialog(
+            onDismiss = { showPrivacyDialog = false }
+        )
     }
 
     if (showTermsDialog) {
@@ -690,6 +672,292 @@ private fun ThemeOptionRow(
             text = title,
             style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
             color = MaterialTheme.colorScheme.onSurface
+        )
+    }
+}
+
+@Composable
+private fun PrivacyPolicyDialog(
+    onDismiss: () -> Unit
+) {
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
+        Card(
+            shape = RoundedCornerShape(24.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+            modifier = Modifier
+                .fillMaxWidth(0.94f)
+                .fillMaxHeight(0.90f)
+        ) {
+            Column(
+                modifier = Modifier.fillMaxSize()
+            ) {
+                // Header Bar
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp, vertical = 16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Privacy Policy",
+                            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = "PDF Suite • ViridOrigin Systems",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+
+                    IconButton(onClick = onDismiss) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Close",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+
+                // Scrollable Content
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .verticalScroll(rememberScrollState())
+                        .padding(horizontal = 20.dp, vertical = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    // Meta Information Card
+                    Card(
+                        shape = RoundedCornerShape(12.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f)
+                        ),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Column(modifier = Modifier.padding(14.dp)) {
+                            Text(
+                                text = "Document Metadata",
+                                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = "• Application: PDF Suite\n" +
+                                        "• Package ID: com.aistudio.pdfutility.qxvrmp\n" +
+                                        "• Publisher / Developer: ViridOrigin Systems (SahidHosenGazi)\n" +
+                                        "• Contact: viridoriginsystems@gmail.com\n" +
+                                        "• Location: West Bengal, PIN: 743425, India\n" +
+                                        "• Effective / Last Updated: August 29, 2026",
+                                style = MaterialTheme.typography.bodySmall.copy(lineHeight = 18.sp),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+
+                    PrivacySection(
+                        title = "1. About PDF Suite",
+                        body = "PDF Suite is a utility application designed to help Android users create, manage, and process PDF documents locally on their mobile devices.\n\n" +
+                                "The application currently includes tools for Merging PDFs, Splitting PDFs, Compressing PDFs, converting Images to PDF, converting Text to PDF, Password-Protecting (Locking) PDFs, Removing Passwords (Unlocking) PDFs, Rotating Pages, Extracting Pages, and Applying Signatures to PDFs.\n\n" +
+                                "The application is built on an on-device processing model where core document operations execute locally inside the private Android sandbox on your device."
+                    )
+
+                    PrivacySection(
+                        title = "2. Information We Process",
+                        body = "ViridOrigin Systems does not operate user accounts, customer registration systems, or remote document-ingestion servers for PDF Suite.\n\n" +
+                                "Information processed by or through the application is categorized as follows:\n\n" +
+                                "• User-Selected Documents and Images: Files you explicitly select using Android's system picker are accessed strictly for the requested utility operation.\n" +
+                                "• User-Entered Text and Annotations: Text entered into the Text-to-PDF tool and hand-drawn strokes created in the signature pad are processed in volatile memory on-device.\n" +
+                                "• Cryptographic Passwords: Passwords entered to protect or unlock documents exist only in temporary memory during processing and are never logged, stored, or transmitted.\n" +
+                                "• Local History Metadata: Basic file descriptors (file name, local file path, file size, page count, operation timestamp) are stored locally in an on-device SQLite database via Room.\n" +
+                                "• User Preferences: UI preferences such as theme mode, color palettes, and language choices are stored locally in Android SharedPreferences.\n" +
+                                "• Third-Party Diagnostic & Advertising Data: In the ad-supported free version, the Google Mobile Ads SDK (AdMob) may receive standard device diagnostics, IP address, and advertising identifiers (e.g., Google Advertising ID) in accordance with Google's privacy policies."
+                    )
+
+                    PrivacySection(
+                        title = "3. How PDF Files and Images Are Processed",
+                        body = "• Storage Access Framework (SAF): When you choose to open or modify a file, you interact with Android's system file picker. PDF Suite receives temporary access only to the specific URI you select.\n\n" +
+                                "• Local Temporary Staging: The selected document stream is temporarily copied into the application's private cache directory (cache/pdf_temp/) for processing.\n\n" +
+                                "• On-Device Engine: PDF processing is executed using the open-source Apache PDFBox Android library (com.tom-roush:pdfbox-android) and native Android Graphics APIs on your device CPU/memory.\n\n" +
+                                "• Output Generation: Newly created or modified PDF files are written to the application's sandboxed storage directory (files/generated_pdfs/).\n\n" +
+                                "• Exporting: When you save a generated file, Android's system document creator (CreateDocument) allows you to choose an external destination of your choice.\n\n" +
+                                "• Sharing: When you share a document, the application uses Android's secure FileProvider to generate a temporary, read-only content URI for the receiving application.\n\n" +
+                                "• Passwords & Signatures: Passwords are used in memory to configure 128-bit encryption/decryption policies and are immediately cleared. Signature drawings are converted in memory to an image stamp and applied to the target page without recording biometric parameters."
+                    )
+
+                    PrivacySection(
+                        title = "4. Local Storage and Recent Files",
+                        body = "PDF Suite maintains a local record of recently generated documents using an on-device SQLite database managed by Android Jetpack Room (pdf_utility_database).\n\n" +
+                                "The recent_pdfs table stores:\n" +
+                                "• Unique item ID (auto-generated)\n" +
+                                "• Display file name\n" +
+                                "• Sandboxed internal file path\n" +
+                                "• Creation timestamp\n" +
+                                "• File size in bytes\n" +
+                                "• Total page count\n" +
+                                "• Operation type identifier (e.g., MERGE, LOCK, SIGN)\n\n" +
+                                "The database does not store document text or binary contents. You can delete individual recent entries (which deletes the file from internal storage) or tap 'Clear All Recents' to remove all records and purge temporary cache files."
+                    )
+
+                    PrivacySection(
+                        title = "5. Permissions and Device Access",
+                        body = "PDF Suite declares and uses only the following minimal standard permissions in its Android Manifest:\n\n" +
+                                "• INTERNET (android.permission.INTERNET): Required exclusively for Google Mobile Ads SDK communication to load advertisements in the free tier, and for Google Play Billing operations.\n\n" +
+                                "• ACCESS_NETWORK_STATE (android.permission.ACCESS_NETWORK_STATE): Used to detect active Internet connectivity before making ad requests.\n\n" +
+                                "What We DO NOT Request or Access:\n" +
+                                "• NO Broad Storage Permissions: The app does not request READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE, or MANAGE_EXTERNAL_STORAGE. All file access is strictly scoped per file through the Android Storage Access Framework.\n" +
+                                "• NO Camera or Microphone Access.\n" +
+                                "• NO Location (GPS or Network) Access.\n" +
+                                "• NO Contacts, Phone State, or SMS Access.\n" +
+                                "• NO Bluetooth, NFC, or Biometric Sensor Access."
+                    )
+
+                    PrivacySection(
+                        title = "6. Internet and Network Communication",
+                        body = "ViridOrigin Systems does not maintain any custom backend servers, web services, REST APIs, or cloud document repositories for PDF Suite.\n\n" +
+                                "Your documents, images, text, and signatures are processed locally and are NEVER transmitted over the Internet to ViridOrigin Systems or any cloud storage provider.\n\n" +
+                                "Network traffic generated by the application is confined to:\n" +
+                                "1. Google Mobile Ads SDK (AdMob) for serving banner and interstitial advertisements in the ad-supported tier.\n" +
+                                "2. Google Play Billing Client for verifying in-app entitlement status when Google Play services are present."
+                    )
+
+                    PrivacySection(
+                        title = "7. Advertising and Third-Party Services",
+                        body = "To keep core PDF utility features accessible free of charge, PDF Suite integrates the Google Mobile Ads SDK (com.google.android.gms:play-services-ads).\n\n" +
+                                "• Data Handled by Google: When advertisements are requested, Google AdMob may collect and process device-specific information, coarse network information (such as IP address), app performance diagnostics, and advertising identifiers (such as the Google Advertising ID / AAID) subject to Google's Privacy Policy.\n\n" +
+                                "• Ad Placement & Frequency: The app displays standard banner ads and frequency-capped interstitial ads. Ads are throttled to avoid disruptive experiences.\n\n" +
+                                "• Ad Suppression: Advertisements are suppressed across the entire application if an ad-free premium entitlement is active.\n\n" +
+                                "• User Ad Choices: You can manage or reset your advertising ID and opt out of personalized ads at any time via your device settings (Settings > Google > Ads)."
+                    )
+
+                    PrivacySection(
+                        title = "8. Payments and Premium Features",
+                        body = "PDF Suite includes architectural support for Google Play In-App Billing (com.android.billingclient:billing-ktx) to enable an optional one-time purchase for permanent ad removal.\n\n" +
+                                "• Marketplace Neutrality: In distributions or marketplaces where in-app billing is not provisioned or active, the application operates in standard mode.\n\n" +
+                                "• Financial Data Security: ViridOrigin Systems does not collect, receive, process, or store credit card details, debit card numbers, bank accounts, or billing addresses. All payment transactions are handled directly and securely by the relevant app store platform (such as Google Play)."
+                    )
+
+                    PrivacySection(
+                        title = "9. Data Sharing and Disclosure",
+                        body = "ViridOrigin Systems does not sell, rent, lease, trade, or disclose your personal data or document content to any third party.\n\n" +
+                                "Data is shared only in the following scenarios:\n" +
+                                "• User-Initiated Sharing: When you select 'Share PDF', you choose the third-party application (e.g., email client, messaging app) that receives temporary read-only access to the file via Android FileProvider.\n" +
+                                "• Third-Party Advertising: Google Mobile Ads SDK interacts with Google's servers as disclosed in Section 7.\n" +
+                                "• Legal Compliance: In the unlikely event required by applicable law, regulation, or valid court order."
+                    )
+
+                    PrivacySection(
+                        title = "10. Data Retention and Deletion",
+                        body = "• Temporary Files: Files placed in cache/pdf_temp/ are automatically purged during cache clearing operations or when reclaimed by the Android operating system.\n\n" +
+                                "• Generated Files: Files in files/generated_pdfs/ remain stored locally on your device until you delete them via the Recent screen or clear the application's storage in Android Settings.\n\n" +
+                                "• History Records: Recent file metadata in the Room SQLite database is retained until manually deleted by you or upon app uninstallation.\n\n" +
+                                "• Full Erasure: Uninstalling PDF Suite permanently deletes all sandboxed files, local database records, cache, and SharedPreferences from your device."
+                    )
+
+                    PrivacySection(
+                        title = "11. Security Architecture",
+                        body = "We implement reasonable and standard technical safeguards to protect your files and local data:\n\n" +
+                                "• App Sandboxing: Processing occurs within the isolated Android application sandbox, preventing other installed apps from accessing private files.\n" +
+                                "• Secure File Sharing: File sharing uses Android FileProvider with temporary, scoped read grants (FLAG_GRANT_READ_URI_PERMISSION).\n" +
+                                "• PDF Cryptography: PDF password protection utilizes standard 128-bit encryption algorithms provided by Apache PDFBox.\n\n" +
+                                "Please note that no method of electronic storage or device execution is 100% secure against physical device theft, root compromises, or operating system-level malware."
+                    )
+
+                    PrivacySection(
+                        title = "12. Backup and Device Transfer",
+                        body = "PDF Suite participates in Android's standard Auto Backup framework (as defined in backup_rules.xml and data_extraction_rules.xml).\n\n" +
+                                "Application preferences (theme, settings) and Room database metadata may be backed up to your personal cloud backup (e.g., Google Drive) according to your device OS settings.\n\n" +
+                                "Temporary processing caches are excluded from backup. You can disable cloud backups for all apps in your Android system settings."
+                    )
+
+                    PrivacySection(
+                        title = "13. Children's Privacy",
+                        body = "PDF Suite is a general-purpose utility tool intended for general audiences. The application is not directed at children under the age of 13 (or the applicable age in your jurisdiction).\n\n" +
+                                "We do not knowingly collect, solicit, or store personal information from children."
+                    )
+
+                    PrivacySection(
+                        title = "14. Your Privacy Choices and Control",
+                        body = "You maintain full control over your data while using PDF Suite:\n\n" +
+                                "• File Ingestion Control: You choose which specific documents to open via the system picker.\n" +
+                                "• Deletion Controls: You can delete individual recent entries or clear the entire history at any time.\n" +
+                                "• Storage Reset: You can clear all data by navigating to Android Settings > Apps > PDF Suite > Storage > Clear Data.\n" +
+                                "• Advertising Preferences: You can reset your Advertising ID or opt out of interest-based ads through your Android system settings.\n" +
+                                "• Depending on your location and applicable data protection legislation (such as in India, the EEA/UK, or California), you may have statutory rights regarding third-party service data."
+                    )
+
+                    PrivacySection(
+                        title = "15. Third-Party Services and Reference Links",
+                        body = "For additional details regarding how third-party SDKs process diagnostic and advertising data, please consult their respective policies:\n\n" +
+                                "• Google Privacy Policy: https://policies.google.com/privacy\n" +
+                                "• Google Advertising Technologies: https://policies.google.com/technologies/ads\n" +
+                                "• Apache PDFBox Android: Open-source under Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)"
+                    )
+
+                    PrivacySection(
+                        title = "16. Changes to This Privacy Policy",
+                        body = "ViridOrigin Systems may update this Privacy Policy from time to time to reflect operational, legal, or technical changes. Any revisions will be published directly within the application along with an updated 'Last Updated' date. We encourage you to review this policy periodically."
+                    )
+
+                    PrivacySection(
+                        title = "17. Contact Us",
+                        body = "If you have any questions, inquiries, or concerns regarding this Privacy Policy or the data practices of PDF Suite, please contact us:\n\n" +
+                                "• Entity: ViridOrigin Systems\n" +
+                                "• Developer: SahidHosenGazi\n" +
+                                "• Email: viridoriginsystems@gmail.com\n" +
+                                "• Location: West Bengal, PIN: 743425, India\n" +
+                                "• Application Package: com.aistudio.pdfutility.qxvrmp"
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+
+                // Bottom Action
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp, vertical = 12.dp)
+                ) {
+                    PrimaryButton(
+                        text = "I Understand",
+                        onClick = onDismiss,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun PrivacySection(
+    title: String,
+    body: String
+) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+            color = MaterialTheme.colorScheme.onSurface
+        )
+        Spacer(modifier = Modifier.height(6.dp))
+        Text(
+            text = body,
+            style = MaterialTheme.typography.bodyMedium.copy(
+                lineHeight = 21.sp,
+                fontSize = 13.sp
+            ),
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
 }
