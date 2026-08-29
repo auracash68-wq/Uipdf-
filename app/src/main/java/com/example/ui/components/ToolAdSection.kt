@@ -31,15 +31,12 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.example.data.AdManager
 import com.example.model.UserEntitlement
-import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.AdView
-import com.google.android.gms.ads.LoadAdError
 
 /**
  * Large AdMob Medium Rectangle (300x250) banner card for tool pages.
- * Preloads and displays cleanly according to Google AdMob policies.
  */
 @Composable
 fun AdMobLargeCard(
@@ -47,23 +44,6 @@ fun AdMobLargeCard(
     modifier: Modifier = Modifier
 ) {
     if (entitlement == UserEntitlement.PREMIUM) return
-
-    var isAdLoaded by remember { mutableStateOf(false) }
-    var hasAdFailed by remember { mutableStateOf(false) }
-    var adViewRef by remember { mutableStateOf<AdView?>(null) }
-
-    DisposableEffect(Unit) {
-        onDispose {
-            try {
-                adViewRef?.destroy()
-            } catch (_: Exception) {}
-            adViewRef = null
-        }
-    }
-
-    if (hasAdFailed) {
-        return
-    }
 
     Card(
         modifier = modifier.fillMaxWidth(),
@@ -119,6 +99,17 @@ fun AdMobLargeCard(
                     .background(MaterialTheme.colorScheme.surface),
                 contentAlignment = Alignment.Center
             ) {
+                var adViewRef by remember { mutableStateOf<AdView?>(null) }
+
+                DisposableEffect(Unit) {
+                    onDispose {
+                        try {
+                            adViewRef?.destroy()
+                        } catch (_: Exception) {}
+                        adViewRef = null
+                    }
+                }
+
                 AndroidView(
                     modifier = Modifier.size(width = 300.dp, height = 250.dp),
                     factory = { ctx ->
@@ -127,28 +118,11 @@ fun AdMobLargeCard(
                                 adViewRef = this
                                 setAdSize(AdSize.MEDIUM_RECTANGLE)
                                 adUnitId = AdManager.MEDIUM_RECTANGLE_TEST_ID
-                                adListener = object : AdListener() {
-                                    override fun onAdLoaded() {
-                                        super.onAdLoaded()
-                                        isAdLoaded = true
-                                        hasAdFailed = false
-                                    }
-
-                                    override fun onAdFailedToLoad(error: LoadAdError) {
-                                        super.onAdFailedToLoad(error)
-                                        isAdLoaded = false
-                                        hasAdFailed = true
-                                    }
-                                }
                                 loadAd(AdRequest.Builder().build())
                             }
                         } catch (_: Throwable) {
-                            hasAdFailed = true
                             android.view.View(ctx)
                         }
-                    },
-                    update = {
-                        adViewRef = it as? AdView
                     }
                 )
             }

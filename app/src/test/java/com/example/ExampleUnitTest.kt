@@ -67,4 +67,24 @@ class ExampleUnitTest {
         val allowedWhenFreeOffline = isFree || isConnected
         assertFalse(allowedWhenFreeOffline)
     }
+
+    @Test
+    fun testAdManagerTestIds() {
+        assertEquals("ca-app-pub-3940256099942544/6300978111", com.example.data.AdManager.BANNER_TEST_ID)
+        assertEquals("ca-app-pub-3940256099942544/6300978111", com.example.data.AdManager.MEDIUM_RECTANGLE_TEST_ID)
+        assertEquals("ca-app-pub-3940256099942544/1033173712", com.example.data.AdManager.INTERSTITIAL_TEST_ID)
+        assertEquals("ca-app-pub-3940256099942544/5224354917", com.example.data.AdManager.REWARDED_TEST_ID)
+    }
+
+    @Test
+    fun testAdStateValues() {
+        val states = com.example.data.AdState.values()
+        assertTrue(states.contains(com.example.data.AdState.IDLE))
+        assertTrue(states.contains(com.example.data.AdState.LOADING))
+        assertTrue(states.contains(com.example.data.AdState.READY))
+        assertTrue(states.contains(com.example.data.AdState.SHOWING))
+        assertTrue(states.contains(com.example.data.AdState.FAILED))
+        assertTrue(states.contains(com.example.data.AdState.EXPIRED))
+        assertTrue(states.contains(com.example.data.AdState.DISPOSED))
+    }
 }

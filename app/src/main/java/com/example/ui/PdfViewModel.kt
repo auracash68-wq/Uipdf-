@@ -11,6 +11,7 @@ import android.text.Layout
 import androidx.core.content.FileProvider
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.data.AdManager
 import com.example.data.AppThemeMode
 import com.example.data.RecentPdfRepository
 import com.example.data.SettingsRepository
@@ -155,7 +156,7 @@ class PdfViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             val uris = fileItems.map { it.uri }
             val result = pdfProcessor.mergePdfs(uris, outputName.ifBlank { "Merged_Document" })
-            handleOperationResult(result, PdfOperationType.MERGE)
+            handleOperationResult(result, PdfOperationType.MERGE, activity)
         }
     }
 
@@ -171,7 +172,7 @@ class PdfViewModel(application: Application) : AndroidViewModel(application) {
         _uiState.value = OperationUiState.Processing("Splitting PDF document...")
         viewModelScope.launch {
             val result = pdfProcessor.splitPdf(sourceUri, pageRange, outputName.ifBlank { "Split_Document" })
-            handleOperationResult(result, PdfOperationType.SPLIT)
+            handleOperationResult(result, PdfOperationType.SPLIT, activity)
         }
     }
 
@@ -187,7 +188,7 @@ class PdfViewModel(application: Application) : AndroidViewModel(application) {
         _uiState.value = OperationUiState.Processing("Extracting ${pageNumbers.size} pages...")
         viewModelScope.launch {
             val result = pdfProcessor.extractPages(sourceUri, pageNumbers, outputName.ifBlank { "Extracted_Pages" })
-            handleOperationResult(result, PdfOperationType.EXTRACT)
+            handleOperationResult(result, PdfOperationType.EXTRACT, activity)
         }
     }
 
@@ -204,7 +205,7 @@ class PdfViewModel(application: Application) : AndroidViewModel(application) {
         _uiState.value = OperationUiState.Processing("Rotating PDF document by $degrees°...")
         viewModelScope.launch {
             val result = pdfProcessor.rotatePdf(sourceUri, degrees, targetPages, outputName.ifBlank { "Rotated_Document" })
-            handleOperationResult(result, PdfOperationType.ROTATE)
+            handleOperationResult(result, PdfOperationType.ROTATE, activity)
         }
     }
 
@@ -235,7 +236,7 @@ class PdfViewModel(application: Application) : AndroidViewModel(application) {
                 quality = quality,
                 outputBaseName = outputName.ifBlank { "Photos_Document" }
             )
-            handleOperationResult(result, PdfOperationType.IMAGE_TO_PDF)
+            handleOperationResult(result, PdfOperationType.IMAGE_TO_PDF, activity)
         }
     }
 
@@ -263,7 +264,7 @@ class PdfViewModel(application: Application) : AndroidViewModel(application) {
                 alignment = Layout.Alignment.ALIGN_NORMAL,
                 outputBaseName = outputName.ifBlank { "Notes_Document" }
             )
-            handleOperationResult(result, PdfOperationType.TEXT_TO_PDF)
+            handleOperationResult(result, PdfOperationType.TEXT_TO_PDF, activity)
         }
     }
 
@@ -279,7 +280,7 @@ class PdfViewModel(application: Application) : AndroidViewModel(application) {
         _uiState.value = OperationUiState.Processing("Encrypting PDF document...")
         viewModelScope.launch {
             val result = pdfProcessor.lockPdf(sourceUri, password, outputName.ifBlank { "Locked_Document" })
-            handleOperationResult(result, PdfOperationType.LOCK)
+            handleOperationResult(result, PdfOperationType.LOCK, activity)
         }
     }
 
@@ -295,7 +296,7 @@ class PdfViewModel(application: Application) : AndroidViewModel(application) {
         _uiState.value = OperationUiState.Processing("Decrypting PDF document...")
         viewModelScope.launch {
             val result = pdfProcessor.unlockPdf(sourceUri, password, outputName.ifBlank { "Unlocked_Document" })
-            handleOperationResult(result, PdfOperationType.UNLOCK)
+            handleOperationResult(result, PdfOperationType.UNLOCK, activity)
         }
     }
 
@@ -306,7 +307,7 @@ class PdfViewModel(application: Application) : AndroidViewModel(application) {
         _uiState.value = OperationUiState.Processing("Compressing PDF document...")
         viewModelScope.launch {
             val result = pdfProcessor.compressPdf(sourceUri, preset, outputName.ifBlank { "Compressed_Document" })
-            handleOperationResult(result, PdfOperationType.COMPRESS)
+            handleOperationResult(result, PdfOperationType.COMPRESS, activity)
         }
     }
 
@@ -339,11 +340,15 @@ class PdfViewModel(application: Application) : AndroidViewModel(application) {
                 targetPages = null,
                 outputBaseName = outputName.ifBlank { "Signed_Document" }
             )
-            handleOperationResult(result, PdfOperationType.SIGN)
+            handleOperationResult(result, PdfOperationType.SIGN, activity)
         }
     }
 
-    private suspend fun handleOperationResult(result: PdfProcessResult, operationType: PdfOperationType) {
+    private suspend fun handleOperationResult(
+        result: PdfProcessResult,
+        operationType: PdfOperationType,
+        activity: Activity? = null
+    ) {
         when (result) {
             is PdfProcessResult.Success -> {
                 pendingExportFile = result.file
@@ -361,6 +366,10 @@ class PdfViewModel(application: Application) : AndroidViewModel(application) {
                     pageCount = result.pageCount,
                     operationType = operationType
                 )
+                // Evaluate eligible interstitial without blocking completion
+                activity?.let { act ->
+                    AdManager.getInstance(getApplication()).onOperationCompleted(act) {}
+                }
             }
             is PdfProcessResult.Error -> {
                 _uiState.value = OperationUiState.Error(result.message)

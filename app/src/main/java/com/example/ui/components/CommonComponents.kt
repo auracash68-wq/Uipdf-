@@ -70,6 +70,8 @@ import com.example.ui.theme.PremiumGold
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.AdView
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 
 /**
  * Bento Grid Item Card
@@ -366,21 +368,16 @@ fun AdBannerContainer(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(50.dp),
-                    factory = { context ->
+                    factory = { ctx ->
                         try {
-                            AdView(context).apply {
+                            AdView(ctx).apply {
                                 adViewRef = this
                                 setAdSize(AdSize.BANNER)
                                 adUnitId = AdManager.BANNER_TEST_ID
                                 loadAd(AdRequest.Builder().build())
                             }
                         } catch (_: Throwable) {
-                            android.view.View(context)
-                        }
-                    },
-                    update = { view ->
-                        if (view is AdView) {
-                            adViewRef = view
+                            android.view.View(ctx)
                         }
                     }
                 )
