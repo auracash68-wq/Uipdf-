@@ -31,6 +31,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
@@ -53,6 +56,7 @@ import com.example.ui.screens.HomeScreen
 import com.example.ui.screens.PremiumScreen
 import com.example.ui.screens.RecentScreen
 import com.example.ui.screens.SettingsScreen
+import com.example.ui.screens.SplashScreen
 import com.example.ui.screens.ToolsScreen
 import com.example.ui.screens.tools.CompressPdfScreen
 import com.example.ui.screens.tools.ExtractPagesScreen
@@ -110,7 +114,16 @@ class MainActivity : ComponentActivity() {
                 darkTheme = isDarkTheme,
                 colorTheme = colorTheme
             ) {
-                val navController = rememberNavController()
+                var showSplash by rememberSaveable { mutableStateOf(true) }
+
+                if (showSplash) {
+                    SplashScreen(
+                        onTimeout = {
+                            showSplash = false
+                        }
+                    )
+                } else {
+                    val navController = rememberNavController()
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = navBackStackEntry?.destination?.route
 
@@ -388,4 +401,5 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+}
 }

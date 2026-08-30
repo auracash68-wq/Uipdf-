@@ -239,4 +239,9 @@
     <string name="action_file_info">File Details</string>
     <string name="action_remove_history">Remove from Recent</string>
     <string name="action_delete_file">Delete File from Device</string>
+
+    <!-- Splash Screen -->
+    <string name="splash_brand_pdf">PDF</string>
+    <string name="splash_company_loading">ViridOrigin Systems · loading</string>
+    <string name="splash_bottom_credit">presented by ViridOrigin Systems</string>
 </resources>
